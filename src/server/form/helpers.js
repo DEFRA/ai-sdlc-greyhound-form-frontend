@@ -62,6 +62,16 @@ export function getFormPages() {
 }
 
 /**
+ * Get a value from an object by dot notation path
+ * @param {object} obj - The object to get the value from
+ * @param {string} path - The dot notation path
+ * @returns {any} The value at the path
+ */
+export function getValueByPath(obj, path) {
+  return path.split('.').reduce((acc, part) => acc?.[part], obj)
+}
+
+/**
  * Format a date for display
  * @param {Date} date The date to format
  * @returns {string} The formatted date
@@ -78,13 +88,21 @@ export function formatDate(date) {
 }
 
 /**
- * Get the section path from a dot notation string
- * @param {object} obj The object to get the value from
- * @param {string} path The path to the value
- * @returns {*} The value at the path
+ * Combine date fields into an ISO date string
+ * @param {object} payload - The form payload containing day, month, year fields
+ * @param {string} prefix - The prefix for the date fields (e.g. 'applicationDate')
+ * @returns {string} The ISO date string
  */
-export function getValueByPath(obj, path) {
-  return path.split('.').reduce((prev, curr) => {
-    return prev ? prev[curr] : null
-  }, obj)
+export function combineDateFields(payload, prefix) {
+  const day = payload[`${prefix}-day`]
+  const month = payload[`${prefix}-month`]
+  const year = payload[`${prefix}-year`]
+
+  if (!day || !month || !year) {
+    return null
+  }
+
+  // Create a date object and return ISO string
+  const date = new Date(year, month - 1, day)
+  return date.toISOString().split('T')[0]
 }

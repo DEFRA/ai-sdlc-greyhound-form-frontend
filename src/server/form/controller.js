@@ -1,4 +1,4 @@
-import { getFormPages, getValueByPath } from './helpers.js'
+import { getFormPages, getValueByPath, combineDateFields } from './helpers.js'
 import { formService } from './index.js'
 
 /**
@@ -125,13 +125,11 @@ export const formPageController = {
         if (payload.saveForLater) {
           // Update the form with the current page data
           const updatedForm = {
-            ...form,
-            pages: {
-              ...form.pages,
-              [page.section]: {
-                ...getValueByPath(form.pages, page.section),
-                ...payload
-              }
+            formName: form.formName,
+            page: page.section,
+            data: {
+              ...getValueByPath(form.pages, page.section),
+              ...payload
             }
           }
 
@@ -140,15 +138,28 @@ export const formPageController = {
           return h.redirect('/dashboard')
         }
 
+        // Process date fields if they exist
+        const processedPayload = { ...payload }
+
+        // Handle application date on page 2
+        if (page.id === 'disqualification') {
+          const applicationDate = combineDateFields(payload, 'applicationDate')
+          if (applicationDate) {
+            processedPayload.applicationDate = applicationDate
+            // Remove the individual date fields
+            delete processedPayload['applicationDate-day']
+            delete processedPayload['applicationDate-month']
+            delete processedPayload['applicationDate-year']
+          }
+        }
+
         // Update the form with the current page data
         const updatedForm = {
-          ...form,
-          pages: {
-            ...form.pages,
-            [page.section]: {
-              ...getValueByPath(form.pages, page.section),
-              ...payload
-            }
+          formName: form.formName,
+          page: page.section,
+          data: {
+            ...getValueByPath(form.pages, page.section),
+            ...processedPayload
           }
         }
 
@@ -306,8 +317,9 @@ export const saveFormController = {
 
       // Update the form with the current page data
       await formService.updateForm(request, formId, {
-        ...form,
-        ...request.payload
+        formName: form.formName,
+        page: 'applicantDetails', // Default to applicantDetails since this is a general save
+        data: request.payload
       })
 
       return h.redirect('/dashboard')
