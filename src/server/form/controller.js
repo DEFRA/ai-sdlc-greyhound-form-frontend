@@ -101,11 +101,13 @@ export const newFormController = {
  */
 function splitDateString(isoDate) {
   if (!isoDate) return { day: '', month: '', year: '' }
-  const date = new Date(isoDate)
+
+  // Parse the date string directly without creating a Date object
+  const [year, month, day] = isoDate.split('-')
   return {
-    day: date.getDate().toString().padStart(2, '0'),
-    month: (date.getMonth() + 1).toString().padStart(2, '0'),
-    year: date.getFullYear().toString()
+    day,
+    month,
+    year
   }
 }
 
@@ -570,6 +572,67 @@ export const formController = {
         heading: 'Something went wrong',
         error:
           'There was a problem processing your form. Please try again later.'
+      })
+    }
+  }
+}
+
+/**
+ * Delete confirmation controller to display and process form deletion
+ * @satisfies {Partial<ServerRoute>}
+ */
+export const deleteConfirmationController = {
+  async handler(request, h) {
+    const { formId } = request.params
+
+    try {
+      // Get the form data from the API
+      const form = await formService.getFormById(request, formId)
+
+      if (!form) {
+        return h.redirect('/dashboard')
+      }
+
+      // Don't allow deletion of submitted forms
+      if (form.status === 'submitted') {
+        return h.redirect('/dashboard')
+      }
+
+      if (request.method === 'post') {
+        try {
+          // Delete the form via the API
+          await formService.deleteForm(request, formId)
+          return h.redirect('/dashboard')
+        } catch (error) {
+          request.logger.error(`Error deleting form ${formId}:`, error)
+          return h.view('form/templates/delete-confirmation', {
+            pageTitle: 'Delete application',
+            heading: 'Delete application',
+            formId,
+            formName: form.formName || 'Untitled Application',
+            error:
+              'There was a problem deleting your application. Please try again later.'
+          })
+        }
+      }
+
+      return h.view('form/templates/delete-confirmation', {
+        pageTitle: 'Delete application',
+        heading: 'Delete application',
+        formId,
+        formName: form.formName || 'Untitled Application'
+      })
+    } catch (error) {
+      request.logger.error(
+        `Error in delete confirmation controller for form ${formId}:`,
+        error
+      )
+      return h.view('form/templates/delete-confirmation', {
+        pageTitle: 'Delete application',
+        heading: 'Delete application',
+        formId,
+        error:
+          'There was a problem loading your application. Please try again later.'
       })
     }
   }

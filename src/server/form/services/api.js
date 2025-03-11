@@ -134,6 +134,32 @@ class ApiService {
       throw error
     }
   }
+
+  /**
+   * Make a DELETE request to the API
+   * @param {string} endpoint - The API endpoint
+   * @param {object} request - The request object
+   * @returns {Promise<Response>} The API response
+   */
+  async delete(endpoint, request) {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      return response
+    } catch (error) {
+      request?.logger.error(`API DELETE error for ${endpoint}:`, error)
+      throw error
+    }
+  }
 }
 
 export default new ApiService()

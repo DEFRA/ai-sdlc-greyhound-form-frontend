@@ -4,7 +4,8 @@ import {
   formPageController,
   reviewFormController,
   confirmationController,
-  saveFormController
+  saveFormController,
+  deleteConfirmationController
 } from './controller.js'
 import FormService from './services/form.js'
 
@@ -69,6 +70,16 @@ export const form = {
           path: '/form/{formId}/save',
           ...saveFormController
         },
+        {
+          method: 'GET',
+          path: '/form/{formId}/delete',
+          ...deleteConfirmationController
+        },
+        {
+          method: 'POST',
+          path: '/form/{formId}/delete',
+          ...deleteConfirmationController
+        },
 
         // API routes matching swagger spec
         {
@@ -107,6 +118,14 @@ export const form = {
                 request.payload
               )
             )
+          }
+        },
+        {
+          method: 'DELETE',
+          path: '/api/forms/{formId}',
+          handler: async (request, h) => {
+            await formService.deleteForm(request, request.params.formId)
+            return h.response().code(204)
           }
         },
         {

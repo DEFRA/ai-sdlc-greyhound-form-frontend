@@ -102,21 +102,32 @@ export function combineDateFields(payload, prefix) {
     return null
   }
 
-  // Create a date object and validate the date is valid
-  const date = new Date(year, month - 1, day)
+  // Validate input values are numbers
+  const dayNum = parseInt(day, 10)
+  const monthNum = parseInt(month, 10)
+  const yearNum = parseInt(year, 10)
+
+  if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
+    return null
+  }
+
+  // Create date string in YYYY-MM-DD format
+  const dateStr = `${yearNum}-${monthNum.toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`
+
+  // Validate the date components are valid
+  const date = new Date(dateStr)
   if (isNaN(date.getTime())) {
     return null
   }
 
-  // Return null if any component is invalid
+  // Verify the date components match what was input (catches invalid dates like 31st Feb)
   if (
-    date.getDate() !== parseInt(day, 10) ||
-    date.getMonth() + 1 !== parseInt(month, 10) ||
-    date.getFullYear() !== parseInt(year, 10)
+    date.getUTCFullYear() !== yearNum ||
+    date.getUTCMonth() + 1 !== monthNum ||
+    date.getUTCDate() !== dayNum
   ) {
     return null
   }
 
-  // Return the date in YYYY-MM-DD format
-  return date.toISOString().split('T')[0]
+  return dateStr
 }
