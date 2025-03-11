@@ -8,6 +8,7 @@ HOST=localhost
 # API configuration
 API_URL=http://localhost:3001
 API_TIMEOUT=30000
+USE_MOCK_API=false
 
 # Session configuration
 SESSION_COOKIE_PASSWORD=this-is-a-very-long-and-secure-password-for-development-only

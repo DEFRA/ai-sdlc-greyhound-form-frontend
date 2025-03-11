@@ -17,11 +17,12 @@ class ApiService {
   constructor() {
     this.baseUrl = config.get('apiUrl')
     this.timeout = config.get('apiTimeout')
-    this.useMock =
-      config.get('isDevelopment') && this.baseUrl === 'http://localhost:3001'
+    this.useMock = process.env.USE_MOCK_API === 'true'
 
     if (this.useMock) {
       logger.info('Using mock API service for development')
+    } else {
+      logger.info(`Using API service at ${this.baseUrl}`)
     }
   }
 
