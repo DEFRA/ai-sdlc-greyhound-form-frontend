@@ -491,7 +491,7 @@ export const confirmationController = {
           pageTitle: 'Application complete',
           heading: 'Application complete',
           formId,
-          referenceNumber: form.referenceNumber || 'HDJ2123F'
+          referenceNumber: form.referenceNumber || 'XXXXXXXX'
         })
       )
     } catch (error) {
@@ -503,7 +503,7 @@ export const confirmationController = {
         h.view('form/templates/confirmation', {
           pageTitle: 'Application complete',
           heading: 'Application complete',
-          referenceNumber: 'HDJ2123F'
+          referenceNumber: 'XXXXXXXX'
         })
       )
     }
