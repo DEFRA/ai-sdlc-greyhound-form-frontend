@@ -6,7 +6,7 @@ import { format, isDate, parseISO } from 'date-fns'
  * @param {string} formatStr - The date-fns format string
  * @returns {string} The formatted date string or empty string if invalid
  */
-export function formatDate(value, formatStr = 'EEE do MMMM yyyy') {
+export function formatDate(value, formatStr = 'd MMMM yyyy') {
   if (!value) {
     return ''
   }

@@ -136,6 +136,18 @@ function splitDateString(isoDate) {
 }
 
 /**
+ * Map of condition IDs to their date fields
+ */
+const conditionDateFields = {
+  condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
+  condition2: ['anticipatedFacilitiesDate'],
+  condition3: ['anticipatedKennelsDate'],
+  condition4: ['anticipatedIdentificationDate'],
+  condition5: ['anticipatedRecordsDate'],
+  condition6: ['anticipatedInjuryRecordsDate']
+}
+
+/**
  * Form page controller to display and process form pages
  * @satisfies {Partial<ServerRoute>}
  */
@@ -190,37 +202,37 @@ export const formPageController = {
 
           // Handle condition dates only on their respective pages
           if (page.section.startsWith('licensingConditions.')) {
-            const conditionDateFields = {
-              condition1: [
-                'anticipatedAgreementDate',
-                'anticipatedRegisterDate'
-              ],
-              condition2: ['anticipatedFacilitiesDate'],
-              condition3: ['anticipatedKennelsDate'],
-              condition4: ['anticipatedIdentificationDate'],
-              condition5: ['anticipatedRecordsDate'],
-              condition6: ['anticipatedInjuryRecordsDate']
-            }
-
             const condition = page.section.split('.')[1]
             const dateFields = conditionDateFields[condition] || []
 
             for (const dateField of dateFields) {
-              const combinedDate = combineDateFields(payload, dateField)
-              if (combinedDate) {
-                processedPayload[dateField] = new Date(
-                  combinedDate
-                ).toISOString()
-              } else {
-                processedPayload[dateField] = null
+              // Only process this date field if at least one of its components is present in the payload
+              const hasDateComponents =
+                payload[`${dateField}_day`] !== undefined ||
+                payload[`${dateField}_month`] !== undefined ||
+                payload[`${dateField}_year`] !== undefined ||
+                payload[`${dateField}-day`] !== undefined ||
+                payload[`${dateField}-month`] !== undefined ||
+                payload[`${dateField}-year`] !== undefined
+
+              if (hasDateComponents) {
+                const combinedDate = combineDateFields(payload, dateField)
+                if (combinedDate) {
+                  processedPayload[dateField] = new Date(
+                    combinedDate
+                  ).toISOString()
+                } else {
+                  // Only set to null if the user attempted to enter a date but it was invalid
+                  processedPayload[dateField] = null
+                }
+                // Remove the individual date fields
+                delete processedPayload[`${dateField}-day`]
+                delete processedPayload[`${dateField}-month`]
+                delete processedPayload[`${dateField}-year`]
+                delete processedPayload[`${dateField}_day`]
+                delete processedPayload[`${dateField}_month`]
+                delete processedPayload[`${dateField}_year`]
               }
-              // Remove the individual date fields
-              delete processedPayload[`${dateField}-day`]
-              delete processedPayload[`${dateField}-month`]
-              delete processedPayload[`${dateField}-year`]
-              delete processedPayload[`${dateField}_day`]
-              delete processedPayload[`${dateField}_month`]
-              delete processedPayload[`${dateField}_year`]
             }
           }
 
@@ -270,32 +282,37 @@ export const formPageController = {
 
         // Handle condition dates only on their respective pages
         if (page.section.startsWith('licensingConditions.')) {
-          const conditionDateFields = {
-            condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
-            condition2: ['anticipatedFacilitiesDate'],
-            condition3: ['anticipatedKennelsDate'],
-            condition4: ['anticipatedIdentificationDate'],
-            condition5: ['anticipatedRecordsDate'],
-            condition6: ['anticipatedInjuryRecordsDate']
-          }
-
           const condition = page.section.split('.')[1]
           const dateFields = conditionDateFields[condition] || []
 
           for (const dateField of dateFields) {
-            const combinedDate = combineDateFields(payload, dateField)
-            if (combinedDate) {
-              processedPayload[dateField] = new Date(combinedDate).toISOString()
-            } else {
-              processedPayload[dateField] = null
+            // Only process this date field if at least one of its components is present in the payload
+            const hasDateComponents =
+              payload[`${dateField}_day`] !== undefined ||
+              payload[`${dateField}_month`] !== undefined ||
+              payload[`${dateField}_year`] !== undefined ||
+              payload[`${dateField}-day`] !== undefined ||
+              payload[`${dateField}-month`] !== undefined ||
+              payload[`${dateField}-year`] !== undefined
+
+            if (hasDateComponents) {
+              const combinedDate = combineDateFields(payload, dateField)
+              if (combinedDate) {
+                processedPayload[dateField] = new Date(
+                  combinedDate
+                ).toISOString()
+              } else {
+                // Only set to null if the user attempted to enter a date but it was invalid
+                processedPayload[dateField] = null
+              }
+              // Remove the individual date fields
+              delete processedPayload[`${dateField}-day`]
+              delete processedPayload[`${dateField}-month`]
+              delete processedPayload[`${dateField}-year`]
+              delete processedPayload[`${dateField}_day`]
+              delete processedPayload[`${dateField}_month`]
+              delete processedPayload[`${dateField}_year`]
             }
-            // Remove the individual date fields
-            delete processedPayload[`${dateField}-day`]
-            delete processedPayload[`${dateField}-month`]
-            delete processedPayload[`${dateField}-year`]
-            delete processedPayload[`${dateField}_day`]
-            delete processedPayload[`${dateField}_month`]
-            delete processedPayload[`${dateField}_year`]
           }
         }
 
@@ -344,22 +361,16 @@ export const formPageController = {
       }
 
       // Split condition date fields for display
-      const dateFields = [
-        'anticipatedAgreementDate',
-        'anticipatedRegisterDate',
-        'anticipatedFacilitiesDate',
-        'anticipatedKennelsDate',
-        'anticipatedIdentificationDate',
-        'anticipatedRecordsDate',
-        'anticipatedInjuryRecordsDate'
-      ]
-
-      for (const dateField of dateFields) {
-        if (sectionData[dateField]) {
-          const { day, month, year } = splitDateString(sectionData[dateField])
-          sectionData[`${dateField}_day`] = day
-          sectionData[`${dateField}_month`] = month
-          sectionData[`${dateField}_year`] = year
+      if (page.section.startsWith('licensingConditions.')) {
+        const condition = page.section.split('.')[1]
+        const dateFields = conditionDateFields[condition] || []
+        for (const dateField of dateFields) {
+          if (sectionData[dateField]) {
+            const { day, month, year } = splitDateString(sectionData[dateField])
+            sectionData[`${dateField}_day`] = day
+            sectionData[`${dateField}_month`] = month
+            sectionData[`${dateField}_year`] = year
+          }
         }
       }
 
@@ -436,7 +447,7 @@ export const reviewFormController = {
           pageTitle: 'Review your application',
           heading: 'Review your application',
           formId,
-          formData: form.pages,
+          formData: form.pages || {},
           pages: getFormPages()
         })
       )
@@ -450,6 +461,7 @@ export const reviewFormController = {
           pageTitle: 'Review your application',
           heading: 'Review your application',
           formId,
+          formData: {},
           error:
             'There was a problem loading your application. Please try again later.'
         })
@@ -543,32 +555,35 @@ export const saveFormController = {
 
       // Handle condition dates only on their respective pages
       if (currentPage.section.startsWith('licensingConditions.')) {
-        const conditionDateFields = {
-          condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
-          condition2: ['anticipatedFacilitiesDate'],
-          condition3: ['anticipatedKennelsDate'],
-          condition4: ['anticipatedIdentificationDate'],
-          condition5: ['anticipatedRecordsDate'],
-          condition6: ['anticipatedInjuryRecordsDate']
-        }
-
         const condition = currentPage.section.split('.')[1]
         const dateFields = conditionDateFields[condition] || []
 
         for (const dateField of dateFields) {
-          const combinedDate = combineDateFields(request.payload, dateField)
-          if (combinedDate) {
-            processedPayload[dateField] = new Date(combinedDate).toISOString()
-          } else {
-            processedPayload[dateField] = null
+          // Only process this date field if at least one of its components is present in the payload
+          const hasDateComponents =
+            request.payload[`${dateField}_day`] !== undefined ||
+            request.payload[`${dateField}_month`] !== undefined ||
+            request.payload[`${dateField}_year`] !== undefined ||
+            request.payload[`${dateField}-day`] !== undefined ||
+            request.payload[`${dateField}-month`] !== undefined ||
+            request.payload[`${dateField}-year`] !== undefined
+
+          if (hasDateComponents) {
+            const combinedDate = combineDateFields(request.payload, dateField)
+            if (combinedDate) {
+              processedPayload[dateField] = new Date(combinedDate).toISOString()
+            } else {
+              // Only set to null if the user attempted to enter a date but it was invalid
+              processedPayload[dateField] = null
+            }
+            // Remove the individual date fields
+            delete processedPayload[`${dateField}-day`]
+            delete processedPayload[`${dateField}-month`]
+            delete processedPayload[`${dateField}-year`]
+            delete processedPayload[`${dateField}_day`]
+            delete processedPayload[`${dateField}_month`]
+            delete processedPayload[`${dateField}_year`]
           }
-          // Remove the individual date fields
-          delete processedPayload[`${dateField}-day`]
-          delete processedPayload[`${dateField}-month`]
-          delete processedPayload[`${dateField}-year`]
-          delete processedPayload[`${dateField}_day`]
-          delete processedPayload[`${dateField}_month`]
-          delete processedPayload[`${dateField}_year`]
         }
       }
 
