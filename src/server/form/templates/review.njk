@@ -31,7 +31,11 @@
       {% endif %}
 
       <p class="govuk-body">
-        Check your answers before submitting your application.
+        {% if showChangeLinks %}
+          Check your answers before submitting your application.
+        {% else %}
+          Your submitted application details.
+        {% endif %}
       </p>
 
       <h2 class="govuk-heading-m">Applicant details</h2>
@@ -42,9 +46,9 @@
               text: "Racetrack name"
             },
             value: {
-              text: formData.applicantDetails.racetrackName or 'Not provided'
+              text: formData.applicantDetails.racetrackName if formData.applicantDetails and formData.applicantDetails.racetrackName else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -59,9 +63,9 @@
               text: "Your name"
             },
             value: {
-              text: formData.applicantDetails.applicantName or 'Not provided'
+              text: formData.applicantDetails.applicantName if formData.applicantDetails and formData.applicantDetails.applicantName else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -76,9 +80,9 @@
               text: "Your address"
             },
             value: {
-              text: formData.applicantDetails.applicantAddress or 'Not provided'
+              text: formData.applicantDetails.applicantAddress if formData.applicantDetails and formData.applicantDetails.applicantAddress else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -93,9 +97,9 @@
               text: "Your postcode"
             },
             value: {
-              text: formData.applicantDetails.applicantPostcode or 'Not provided'
+              text: formData.applicantDetails.applicantPostcode if formData.applicantDetails and formData.applicantDetails.applicantPostcode else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -110,9 +114,9 @@
               text: "Racetrack address"
             },
             value: {
-              text: formData.applicantDetails.racetrackAddress or 'Not provided'
+              text: formData.applicantDetails.racetrackAddress if formData.applicantDetails and formData.applicantDetails.racetrackAddress else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -127,9 +131,9 @@
               text: "Racetrack postcode"
             },
             value: {
-              text: formData.applicantDetails.racetrackPostcode or 'Not provided'
+              text: formData.applicantDetails.racetrackPostcode if formData.applicantDetails and formData.applicantDetails.racetrackPostcode else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -144,9 +148,9 @@
               text: "Telephone number"
             },
             value: {
-              text: formData.applicantDetails.telephone or 'Not provided'
+              text: formData.applicantDetails.telephone if formData.applicantDetails and formData.applicantDetails.telephone else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -161,9 +165,9 @@
               text: "Email address"
             },
             value: {
-              text: formData.applicantDetails.email or 'Not provided'
+              text: formData.applicantDetails.email if formData.applicantDetails and formData.applicantDetails.email else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/1",
@@ -178,14 +182,48 @@
               text: "Disqualified"
             },
             value: {
-              text: formData.applicantDetails.disqualified ? "Yes" : "No"
+              text: "Yes" if formData.applicantDetails and formData.applicantDetails.disqualified else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/2",
                   text: "Change",
                   visuallyHiddenText: "disqualification status"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Disqualification details"
+            },
+            value: {
+              text: formData.applicantDetails.disqualificationDetails if formData.applicantDetails and formData.applicantDetails.disqualificationDetails else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/2",
+                  text: "Change",
+                  visuallyHiddenText: "disqualification details"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Application date"
+            },
+            value: {
+              text: formData.applicantDetails.applicationDate | date if formData.applicantDetails and formData.applicantDetails.applicationDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/2",
+                  text: "Change",
+                  visuallyHiddenText: "application date"
                 }
               ]
             }
@@ -203,9 +241,9 @@
               text: "Veterinary surgeon agreement"
             },
             value: {
-              text: formData.licensingConditions.condition1.hasVetAgreement ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition1 and formData.licensingConditions.condition1.hasVetAgreement else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/3",
@@ -220,14 +258,65 @@
               text: "Veterinary surgeon contact"
             },
             value: {
-              text: formData.licensingConditions.condition1.vetContact or 'Not provided'
+              text: formData.licensingConditions.condition1.vetContact if formData.licensingConditions and formData.licensingConditions.condition1 and formData.licensingConditions.condition1.vetContact else 'Not provided'
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/3",
                   text: "Change",
                   visuallyHiddenText: "veterinary surgeon contact"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated agreement date"
+            },
+            value: {
+              text: formData.licensingConditions.condition1.anticipatedAgreementDate | date if formData.licensingConditions and formData.licensingConditions.condition1 and formData.licensingConditions.condition1.anticipatedAgreementDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/3",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated agreement date"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Veterinary register"
+            },
+            value: {
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition1 and formData.licensingConditions.condition1.hasVetRegister else "No"
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/3",
+                  text: "Change",
+                  visuallyHiddenText: "veterinary register"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated register date"
+            },
+            value: {
+              text: formData.licensingConditions.condition1.anticipatedRegisterDate | date if formData.licensingConditions and formData.licensingConditions.condition1 and formData.licensingConditions.condition1.anticipatedRegisterDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/3",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated register date"
                 }
               ]
             }
@@ -243,14 +332,31 @@
               text: "Facilities ready"
             },
             value: {
-              text: formData.licensingConditions.condition2.facilitiesReady ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition2 and formData.licensingConditions.condition2.facilitiesReady else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/5",
                   text: "Change",
                   visuallyHiddenText: "facilities ready"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated facilities date"
+            },
+            value: {
+              text: formData.licensingConditions.condition2.anticipatedFacilitiesDate | date if formData.licensingConditions and formData.licensingConditions.condition2 and formData.licensingConditions.condition2.anticipatedFacilitiesDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/5",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated facilities date"
                 }
               ]
             }
@@ -266,14 +372,31 @@
               text: "Kennels ready"
             },
             value: {
-              text: formData.licensingConditions.condition3.kennelsReady ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition3 and formData.licensingConditions.condition3.kennelsReady else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/6",
                   text: "Change",
                   visuallyHiddenText: "kennels ready"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated kennels date"
+            },
+            value: {
+              text: formData.licensingConditions.condition3.anticipatedKennelsDate | date if formData.licensingConditions and formData.licensingConditions.condition3 and formData.licensingConditions.condition3.anticipatedKennelsDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/6",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated kennels date"
                 }
               ]
             }
@@ -289,14 +412,31 @@
               text: "Greyhound identification"
             },
             value: {
-              text: formData.licensingConditions.condition4.greyhoundIdentified ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition4 and formData.licensingConditions.condition4.greyhoundIdentified else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/7",
                   text: "Change",
                   visuallyHiddenText: "greyhound identification"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated identification date"
+            },
+            value: {
+              text: formData.licensingConditions.condition4.anticipatedIdentificationDate | date if formData.licensingConditions and formData.licensingConditions.condition4 and formData.licensingConditions.condition4.anticipatedIdentificationDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/7",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated identification date"
                 }
               ]
             }
@@ -312,14 +452,31 @@
               text: "Records kept"
             },
             value: {
-              text: formData.licensingConditions.condition5.recordsKept ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition5 and formData.licensingConditions.condition5.recordsKept else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/8",
                   text: "Change",
                   visuallyHiddenText: "records kept"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Anticipated records date"
+            },
+            value: {
+              text: formData.licensingConditions.condition5.anticipatedRecordsDate | date if formData.licensingConditions and formData.licensingConditions.condition5 and formData.licensingConditions.condition5.anticipatedRecordsDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/8",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated records date"
                 }
               ]
             }
@@ -335,9 +492,9 @@
               text: "Injury records kept"
             },
             value: {
-              text: formData.licensingConditions.condition6.injuryRecordsKept ? "Yes" : "No"
+              text: "Yes" if formData.licensingConditions and formData.licensingConditions.condition6 and formData.licensingConditions.condition6.injuryRecordsKept else "No"
             },
-            actions: {
+            actions: showChangeLinks and {
               items: [
                 {
                   href: "/form/" + formId + "/page/9",
@@ -346,21 +503,40 @@
                 }
               ]
             }
+          },
+          {
+            key: {
+              text: "Anticipated injury records date"
+            },
+            value: {
+              text: formData.licensingConditions.condition6.anticipatedInjuryRecordsDate | date if formData.licensingConditions and formData.licensingConditions.condition6 and formData.licensingConditions.condition6.anticipatedInjuryRecordsDate else 'Not provided'
+            },
+            actions: showChangeLinks and {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/9",
+                  text: "Change",
+                  visuallyHiddenText: "anticipated injury records date"
+                }
+              ]
+            }
           }
         ]
       }) }}
 
-      <form method="post" action="/form/{{ formId }}/review" novalidate>
-        <div class="govuk-button-group">
-          {{ govukButton({
-            text: "Submit application"
-          }) }}
+      {% if showChangeLinks %}
+        <form method="post" action="/form/{{ formId }}/review" novalidate>
+          <div class="govuk-button-group">
+            {{ govukButton({
+              text: "Submit application"
+            }) }}
 
-          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
-            Save for later
-          </button>
-        </div>
-      </form>
+            <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+              Save for later
+            </button>
+          </div>
+        </form>
+      {% endif %}
     </div>
   </div>
 {% endblock %} 

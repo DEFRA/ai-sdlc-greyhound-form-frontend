@@ -111,6 +111,29 @@ class FormService {
       return null
     }
   }
+
+  /**
+   * Delete a form by ID
+   * @param {object} request - The request object
+   * @param {string} formId - The form ID to delete
+   * @returns {Promise<void>}
+   */
+  async deleteForm(request, formId) {
+    if (!formId) {
+      request.logger.error('Form ID is required')
+      throw new Error('Form ID is required')
+    }
+
+    try {
+      const response = await apiService.delete(`/api/forms/${formId}`, request)
+      if (!response.ok) {
+        throw new Error(`Failed to delete form: ${response.statusText}`)
+      }
+    } catch (error) {
+      request.logger.error(`Error deleting form ${formId}:`, error)
+      throw error
+    }
+  }
 }
 
 export default FormService

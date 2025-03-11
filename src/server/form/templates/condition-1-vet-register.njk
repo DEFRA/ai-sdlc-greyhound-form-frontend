@@ -24,6 +24,8 @@
         <strong>Condition 1 (continued):</strong> The licence holder must ensure that a register of all veterinary surgeons who attend the racetrack is maintained.
       </p>
 
+      <p class="govuk-body">Page 9 of the Defra guidance on the Regulations explains in more detail the requirements of the veterinary register.</p>
+
       <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
         {{ govukRadios({
           idPrefix: "hasVetRegister",
@@ -63,17 +65,17 @@
                     {
                       classes: "govuk-input--width-2",
                       name: "day",
-                      value: anticipatedRegisterDateDay
+                      value: anticipatedRegisterDate_day
                     },
                     {
                       classes: "govuk-input--width-2",
                       name: "month",
-                      value: anticipatedRegisterDateMonth
+                      value: anticipatedRegisterDate_month
                     },
                     {
                       classes: "govuk-input--width-4",
                       name: "year",
-                      value: anticipatedRegisterDateYear
+                      value: anticipatedRegisterDate_year
                     }
                   ]
                 })

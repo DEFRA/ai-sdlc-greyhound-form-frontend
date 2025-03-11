@@ -21,6 +21,11 @@ export function buildNavigation(request) {
       text: 'New Application',
       url: '/form/new',
       isActive: currentPath === '/form/new'
+    },
+    {
+      text: 'Contact',
+      url: '/contact',
+      isActive: currentPath === '/contact'
     }
   ]
 }

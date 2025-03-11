@@ -21,13 +21,28 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-body">
+        <p class="govuk-body"><strong>Under the Regulations no person may apply for a licence if they are disqualified under:</strong></p>
+        <ul class="govuk-list">
+          <li>(a) section 34 of the Animal Welfare Act 2006;</li>
+          <li>(b) section 3(3) of the Animal Boarding Establishments Act 1963 from keeping a boarding establishment for animals;</li>
+          <li>(c) section 3(3) of the Breeding of Dogs Act 1973 from keeping a breeding establishment;</li>
+          <li>(d) section 5(3) of the Pet Animals Act 1951 from keeping a pet shop;</li>
+          <li>(e) section 4(3) of the Riding Establishments Act 1964 from keeping a riding establishment;</li>
+          <li>(f) section 1 of the Protection of Animals (Amendment) Act 1954 from having custody of an animal; or</li>
+          <li>(g) section 3 of the Protection of Animals Act 1911 from the ownership of an animal;</li>
+        </ul>
+        <p>and any licence issued to a person so disqualified is invalid.</p>
+      </div>
+
       <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
         {{ govukRadios({
           idPrefix: "disqualified",
           name: "disqualified",
           fieldset: {
             legend: {
-              text: "Have you been disqualified from holding a licence under the Animal Welfare Act 2006?",
+              text: "Are you subject to any disqualifications imposed following convictions for an offence under
+any of the Acts listed in the Welfare of Racing Greyhounds Regulations 2010?",
               isPageHeading: false,
               classes: "govuk-fieldset__legend--m"
             }
@@ -42,7 +57,7 @@
                   id: "disqualificationDetails",
                   name: "disqualificationDetails",
                   label: {
-                    text: "Provide details of your disqualification"
+                    text: "Please list the disqualifications to which you are subject"
                   },
                   value: disqualificationDetails
                 })
@@ -73,17 +88,17 @@
             {
               classes: "govuk-input--width-2",
               name: "day",
-              value: applicationDateDay
+              value: applicationDate_day
             },
             {
               classes: "govuk-input--width-2",
               name: "month",
-              value: applicationDateMonth
+              value: applicationDate_month
             },
             {
               classes: "govuk-input--width-4",
               name: "year",
-              value: applicationDateYear
+              value: applicationDate_year
             }
           ]
         }) }}

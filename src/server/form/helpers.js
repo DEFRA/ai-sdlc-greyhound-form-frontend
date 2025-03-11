@@ -18,7 +18,7 @@ export function getFormPages() {
     },
     {
       id: 'condition-1-vet-agreement',
-      title: 'Condition 1: Veterinary Surgeon Agreement',
+      title: 'Licensing Conditions',
       template: 'condition-1-vet-agreement',
       section: 'licensingConditions.condition1'
     },
@@ -91,18 +91,52 @@ export function formatDate(date) {
  * Combine date fields into an ISO date string
  * @param {object} payload - The form payload containing day, month, year fields
  * @param {string} prefix - The prefix for the date fields (e.g. 'applicationDate')
- * @returns {string} The ISO date string
+ * @returns {string|null} The ISO date string or null if invalid/missing date
  */
 export function combineDateFields(payload, prefix) {
-  const day = payload[`${prefix}-day`]
-  const month = payload[`${prefix}-month`]
-  const year = payload[`${prefix}-year`]
+  const day =
+    payload[`${prefix}_day`] ||
+    payload[`${prefix}-day`] ||
+    payload[`${prefix}_-day`]
+  const month =
+    payload[`${prefix}_month`] ||
+    payload[`${prefix}-month`] ||
+    payload[`${prefix}_-month`]
+  const year =
+    payload[`${prefix}_year`] ||
+    payload[`${prefix}-year`] ||
+    payload[`${prefix}_-year`]
 
   if (!day || !month || !year) {
     return null
   }
 
-  // Create a date object and return ISO string
-  const date = new Date(year, month - 1, day)
-  return date.toISOString().split('T')[0]
+  // Validate input values are numbers
+  const dayNum = parseInt(day, 10)
+  const monthNum = parseInt(month, 10)
+  const yearNum = parseInt(year, 10)
+
+  if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
+    return null
+  }
+
+  // Create date string in YYYY-MM-DD format
+  const dateStr = `${yearNum}-${monthNum.toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`
+
+  // Validate the date components are valid
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) {
+    return null
+  }
+
+  // Verify the date components match what was input (catches invalid dates like 31st Feb)
+  if (
+    date.getUTCFullYear() !== yearNum ||
+    date.getUTCMonth() + 1 !== monthNum ||
+    date.getUTCDate() !== dayNum
+  ) {
+    return null
+  }
+
+  return dateStr
 }

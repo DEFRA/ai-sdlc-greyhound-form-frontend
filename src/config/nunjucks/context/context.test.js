@@ -40,6 +40,11 @@ describe('#context', () => {
             isActive: false,
             text: 'New Application',
             url: '/form/new'
+          },
+          {
+            isActive: false,
+            text: 'Contact',
+            url: '/contact'
           }
         ],
         serviceName: 'Greyhound Racetrack Welfare Licence',
@@ -107,6 +112,11 @@ describe('#context cache', () => {
             isActive: false,
             text: 'New Application',
             url: '/form/new'
+          },
+          {
+            isActive: false,
+            text: 'Contact',
+            url: '/contact'
           }
         ],
         serviceName: 'Greyhound Racetrack Welfare Licence',

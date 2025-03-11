@@ -1,5 +1,17 @@
-import { getFormPages, getValueByPath, combineDateFields } from './helpers.js'
+import { getFormPages, combineDateFields } from './helpers.js'
 import { formService } from './index.js'
+
+/**
+ * Helper function to add cache control headers to prevent caching
+ * @param {object} response - The response object
+ * @returns {object} The response object with cache control headers
+ */
+function addNoCacheHeaders(response) {
+  return response.header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, max-age=0'
+  )
+}
 
 /**
  * Dashboard controller to display saved forms
@@ -10,20 +22,24 @@ export const dashboardController = {
     try {
       const savedForms = await formService.getForms(request)
 
-      return h.view('form/templates/dashboard', {
-        pageTitle: 'Your saved forms',
-        heading: 'Your saved forms',
-        savedForms: savedForms || []
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/dashboard', {
+          pageTitle: 'Your saved forms',
+          heading: 'Your saved forms',
+          savedForms: savedForms || []
+        })
+      )
     } catch (error) {
       request.logger.error('Error in dashboard controller:', error)
-      return h.view('form/templates/dashboard', {
-        pageTitle: 'Your saved forms',
-        heading: 'Your saved forms',
-        savedForms: [],
-        error:
-          'There was a problem loading your saved forms. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/dashboard', {
+          pageTitle: 'Your saved forms',
+          heading: 'Your saved forms',
+          savedForms: [],
+          error:
+            'There was a problem loading your saved forms. Please try again later.'
+        })
+      )
     }
   }
 }
@@ -40,12 +56,14 @@ export const newFormController = {
 
         // Validate form name
         if (!payload.formName?.trim()) {
-          return h.view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: payload.formName,
-            error: 'Please enter an application name'
-          })
+          return addNoCacheHeaders(
+            h.view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: payload.formName,
+              error: 'Please enter an application name'
+            })
+          )
         }
 
         // Create a new form in the API
@@ -57,13 +75,15 @@ export const newFormController = {
 
         if (!newForm?.id) {
           request.logger.error('Failed to create form - missing form ID')
-          return h.view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: payload.formName,
-            error:
-              'There was a problem creating your application. Please try again.'
-          })
+          return addNoCacheHeaders(
+            h.view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: payload.formName,
+              error:
+                'There was a problem creating your application. Please try again.'
+            })
+          )
         }
 
         // Redirect to the first page of the form
@@ -76,22 +96,55 @@ export const newFormController = {
           error.message ||
           'There was a problem creating your application. Please try again.'
 
-        return h
-          .view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: request.payload?.formName,
-            error: errorMessage
-          })
-          .code(error.status || 500)
+        return addNoCacheHeaders(
+          h
+            .view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: request.payload?.formName,
+              error: errorMessage
+            })
+            .code(error.status || 500)
+        )
       }
     }
 
-    return h.view('form/templates/new-form', {
-      pageTitle: 'Start a new application',
-      heading: 'Start a new application'
-    })
+    return addNoCacheHeaders(
+      h.view('form/templates/new-form', {
+        pageTitle: 'Start a new application',
+        heading: 'Start a new application'
+      })
+    )
   }
+}
+
+/**
+ * Split an ISO date string into day, month, year components
+ * @param {string} isoDate - The ISO date string to split
+ * @returns {object} Object containing day, month, year values
+ */
+function splitDateString(isoDate) {
+  if (!isoDate) return { day: '', month: '', year: '' }
+
+  // Parse the ISO date string directly to avoid timezone issues
+  const [year, month, day] = isoDate.split('T')[0].split('-')
+  return {
+    day: parseInt(day, 10).toString(),
+    month: parseInt(month, 10).toString(),
+    year
+  }
+}
+
+/**
+ * Map of condition IDs to their date fields
+ */
+const conditionDateFields = {
+  condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
+  condition2: ['anticipatedFacilitiesDate'],
+  condition3: ['anticipatedKennelsDate'],
+  condition4: ['anticipatedIdentificationDate'],
+  condition5: ['anticipatedRecordsDate'],
+  condition6: ['anticipatedInjuryRecordsDate']
 }
 
 /**
@@ -123,14 +176,83 @@ export const formPageController = {
 
         // Check if the user clicked "Save for later"
         if (payload.saveForLater) {
+          // Process date fields if they exist
+          const processedPayload = { ...payload }
+          delete processedPayload.saveForLater
+
+          // Handle application date on page 2
+          if (page.id === 'disqualification') {
+            const applicationDate = combineDateFields(
+              payload,
+              'applicationDate'
+            )
+            if (applicationDate) {
+              processedPayload.applicationDate = new Date(
+                applicationDate
+              ).toISOString()
+            }
+            // Remove the individual date fields
+            delete processedPayload['applicationDate-day']
+            delete processedPayload['applicationDate-month']
+            delete processedPayload['applicationDate-year']
+            delete processedPayload.applicationDate_day
+            delete processedPayload.applicationDate_month
+            delete processedPayload.applicationDate_year
+          }
+
+          // Handle condition dates only on their respective pages
+          if (page.section.startsWith('licensingConditions.')) {
+            const condition = page.section.split('.')[1]
+            const dateFields = conditionDateFields[condition] || []
+
+            for (const dateField of dateFields) {
+              // Only process this date field if at least one of its components is present in the payload
+              const hasDateComponents =
+                payload[`${dateField}_day`] !== undefined ||
+                payload[`${dateField}_month`] !== undefined ||
+                payload[`${dateField}_year`] !== undefined ||
+                payload[`${dateField}-day`] !== undefined ||
+                payload[`${dateField}-month`] !== undefined ||
+                payload[`${dateField}-year`] !== undefined
+
+              if (hasDateComponents) {
+                const combinedDate = combineDateFields(payload, dateField)
+                if (combinedDate) {
+                  processedPayload[dateField] = new Date(
+                    combinedDate
+                  ).toISOString()
+                } else {
+                  // Only set to null if the user attempted to enter a date but it was invalid
+                  processedPayload[dateField] = null
+                }
+                // Remove the individual date fields
+                delete processedPayload[`${dateField}-day`]
+                delete processedPayload[`${dateField}-month`]
+                delete processedPayload[`${dateField}-year`]
+                delete processedPayload[`${dateField}_day`]
+                delete processedPayload[`${dateField}_month`]
+                delete processedPayload[`${dateField}_year`]
+              }
+            }
+          }
+
           // Update the form with the current page data
           const updatedForm = {
             formName: form.formName,
-            page: page.section,
-            data: {
-              ...getValueByPath(form.pages, page.section),
-              ...payload
-            }
+            page: page.section.startsWith('licensingConditions.')
+              ? 'licensingConditions'
+              : page.section,
+            data: page.section.startsWith('licensingConditions.')
+              ? {
+                  ...(form.pages?.licensingConditions || {}),
+                  [page.section.split('.')[1]]: {
+                    ...(form.pages?.licensingConditions?.[
+                      page.section.split('.')[1]
+                    ] || {}),
+                    ...processedPayload
+                  }
+                }
+              : processedPayload
           }
 
           await formService.updateForm(request, formId, updatedForm)
@@ -145,22 +267,72 @@ export const formPageController = {
         if (page.id === 'disqualification') {
           const applicationDate = combineDateFields(payload, 'applicationDate')
           if (applicationDate) {
-            processedPayload.applicationDate = applicationDate
-            // Remove the individual date fields
-            delete processedPayload['applicationDate-day']
-            delete processedPayload['applicationDate-month']
-            delete processedPayload['applicationDate-year']
+            processedPayload.applicationDate = new Date(
+              applicationDate
+            ).toISOString()
+          }
+          // Remove the individual date fields
+          delete processedPayload['applicationDate-day']
+          delete processedPayload['applicationDate-month']
+          delete processedPayload['applicationDate-year']
+          delete processedPayload.applicationDate_day
+          delete processedPayload.applicationDate_month
+          delete processedPayload.applicationDate_year
+        }
+
+        // Handle condition dates only on their respective pages
+        if (page.section.startsWith('licensingConditions.')) {
+          const condition = page.section.split('.')[1]
+          const dateFields = conditionDateFields[condition] || []
+
+          for (const dateField of dateFields) {
+            // Only process this date field if at least one of its components is present in the payload
+            const hasDateComponents =
+              payload[`${dateField}_day`] !== undefined ||
+              payload[`${dateField}_month`] !== undefined ||
+              payload[`${dateField}_year`] !== undefined ||
+              payload[`${dateField}-day`] !== undefined ||
+              payload[`${dateField}-month`] !== undefined ||
+              payload[`${dateField}-year`] !== undefined
+
+            if (hasDateComponents) {
+              const combinedDate = combineDateFields(payload, dateField)
+              if (combinedDate) {
+                processedPayload[dateField] = new Date(
+                  combinedDate
+                ).toISOString()
+              } else {
+                // Only set to null if the user attempted to enter a date but it was invalid
+                processedPayload[dateField] = null
+              }
+              // Remove the individual date fields
+              delete processedPayload[`${dateField}-day`]
+              delete processedPayload[`${dateField}-month`]
+              delete processedPayload[`${dateField}-year`]
+              delete processedPayload[`${dateField}_day`]
+              delete processedPayload[`${dateField}_month`]
+              delete processedPayload[`${dateField}_year`]
+            }
           }
         }
 
         // Update the form with the current page data
         const updatedForm = {
           formName: form.formName,
-          page: page.section,
-          data: {
-            ...getValueByPath(form.pages, page.section),
-            ...processedPayload
-          }
+          page: page.section.startsWith('licensingConditions.')
+            ? 'licensingConditions'
+            : page.section,
+          data: page.section.startsWith('licensingConditions.')
+            ? {
+                ...(form.pages?.licensingConditions || {}),
+                [page.section.split('.')[1]]: {
+                  ...(form.pages?.licensingConditions?.[
+                    page.section.split('.')[1]
+                  ] || {}),
+                  ...processedPayload
+                }
+              }
+            : processedPayload
         }
 
         await formService.updateForm(request, formId, updatedForm)
@@ -174,38 +346,68 @@ export const formPageController = {
       }
 
       // Get the section data for the current page
-      const sectionData = getValueByPath(form.pages, page.section) || {}
+      const sectionData = page.section.startsWith('licensingConditions.')
+        ? form.pages?.licensingConditions?.[page.section.split('.')[1]] || {}
+        : form.pages?.[page.section] || {}
 
-      return h.view(`form/templates/${page.template}`, {
-        pageTitle: page.title,
-        heading: page.title,
-        formId,
-        currentPage,
-        totalPages: pages.length,
-        backLink:
-          currentPage > 1
-            ? `/form/${formId}/page/${currentPage - 1}`
-            : '/dashboard',
-        ...sectionData
-      })
+      // Split date fields for display if needed
+      if (page.id === 'disqualification' && sectionData.applicationDate) {
+        const { day, month, year } = splitDateString(
+          sectionData.applicationDate
+        )
+        sectionData.applicationDate_day = day
+        sectionData.applicationDate_month = month
+        sectionData.applicationDate_year = year
+      }
+
+      // Split condition date fields for display
+      if (page.section.startsWith('licensingConditions.')) {
+        const condition = page.section.split('.')[1]
+        const dateFields = conditionDateFields[condition] || []
+        for (const dateField of dateFields) {
+          if (sectionData[dateField]) {
+            const { day, month, year } = splitDateString(sectionData[dateField])
+            sectionData[`${dateField}_day`] = day
+            sectionData[`${dateField}_month`] = month
+            sectionData[`${dateField}_year`] = year
+          }
+        }
+      }
+
+      return addNoCacheHeaders(
+        h.view(`form/templates/${page.template}`, {
+          pageTitle: page.title,
+          heading: page.title,
+          formId,
+          currentPage,
+          totalPages: pages.length,
+          backLink:
+            currentPage > 1
+              ? `/form/${formId}/page/${currentPage - 1}`
+              : '/dashboard',
+          ...sectionData
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in form page controller for page ${currentPage}:`,
         error
       )
-      return h.view(`form/templates/${page.template}`, {
-        pageTitle: page.title,
-        heading: page.title,
-        formId,
-        currentPage,
-        totalPages: pages.length,
-        backLink:
-          currentPage > 1
-            ? `/form/${formId}/page/${currentPage - 1}`
-            : '/dashboard',
-        error:
-          'There was a problem loading your application. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view(`form/templates/${page.template}`, {
+          pageTitle: page.title,
+          heading: page.title,
+          formId,
+          currentPage,
+          totalPages: pages.length,
+          backLink:
+            currentPage > 1
+              ? `/form/${formId}/page/${currentPage - 1}`
+              : '/dashboard',
+          error:
+            'There was a problem loading your application. Please try again later.'
+        })
+      )
     }
   }
 }
@@ -240,25 +442,35 @@ export const reviewFormController = {
         return h.redirect(`/form/${formId}/confirmation`)
       }
 
-      return h.view('form/templates/review', {
+      // Prepare the view data
+      const viewData = {
         pageTitle: 'Review your application',
         heading: 'Review your application',
         formId,
-        formData: form.pages,
-        pages: getFormPages()
-      })
+        formData: form.pages || {},
+        pages: getFormPages(),
+        status: form.status || 'draft',
+        showChangeLinks: form.status !== 'submitted'
+      }
+
+      return addNoCacheHeaders(h.view('form/templates/review', viewData))
     } catch (error) {
       request.logger.error(
         `Error in review form controller for form ${formId}:`,
         error
       )
-      return h.view('form/templates/review', {
-        pageTitle: 'Review your application',
-        heading: 'Review your application',
-        formId,
-        error:
-          'There was a problem loading your application. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/review', {
+          pageTitle: 'Review your application',
+          heading: 'Review your application',
+          formId,
+          formData: {},
+          error:
+            'There was a problem loading your application. Please try again later.',
+          status: 'draft',
+          showChangeLinks: true
+        })
+      )
     }
   }
 }
@@ -279,22 +491,26 @@ export const confirmationController = {
         return h.redirect('/dashboard')
       }
 
-      return h.view('form/templates/confirmation', {
-        pageTitle: 'Application complete',
-        heading: 'Application complete',
-        formId,
-        referenceNumber: form.referenceNumber || 'HDJ2123F'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/confirmation', {
+          pageTitle: 'Application complete',
+          heading: 'Application complete',
+          formId,
+          referenceNumber: form.referenceNumber || 'XXXXXXXX'
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in confirmation controller for form ${formId}:`,
         error
       )
-      return h.view('form/templates/confirmation', {
-        pageTitle: 'Application complete',
-        heading: 'Application complete',
-        referenceNumber: 'HDJ2123F'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/confirmation', {
+          pageTitle: 'Application complete',
+          heading: 'Application complete',
+          referenceNumber: 'XXXXXXXX'
+        })
+      )
     }
   }
 }
@@ -315,11 +531,84 @@ export const saveFormController = {
         return h.redirect('/dashboard')
       }
 
+      // Process date fields if they exist
+      const processedPayload = { ...request.payload }
+
+      // Get current page info
+      const pages = getFormPages()
+      const currentPage = pages.find((p) => p.section === form.page) || pages[0]
+
+      // Handle application date on page 2
+      if (currentPage.id === 'disqualification') {
+        const applicationDate = combineDateFields(
+          request.payload,
+          'applicationDate'
+        )
+        if (applicationDate) {
+          processedPayload.applicationDate = new Date(
+            applicationDate
+          ).toISOString()
+        }
+        // Remove the individual date fields
+        delete processedPayload['applicationDate-day']
+        delete processedPayload['applicationDate-month']
+        delete processedPayload['applicationDate-year']
+        delete processedPayload.applicationDate_day
+        delete processedPayload.applicationDate_month
+        delete processedPayload.applicationDate_year
+      }
+
+      // Handle condition dates only on their respective pages
+      if (currentPage.section.startsWith('licensingConditions.')) {
+        const condition = currentPage.section.split('.')[1]
+        const dateFields = conditionDateFields[condition] || []
+
+        for (const dateField of dateFields) {
+          // Only process this date field if at least one of its components is present in the payload
+          const hasDateComponents =
+            request.payload[`${dateField}_day`] !== undefined ||
+            request.payload[`${dateField}_month`] !== undefined ||
+            request.payload[`${dateField}_year`] !== undefined ||
+            request.payload[`${dateField}-day`] !== undefined ||
+            request.payload[`${dateField}-month`] !== undefined ||
+            request.payload[`${dateField}-year`] !== undefined
+
+          if (hasDateComponents) {
+            const combinedDate = combineDateFields(request.payload, dateField)
+            if (combinedDate) {
+              processedPayload[dateField] = new Date(combinedDate).toISOString()
+            } else {
+              // Only set to null if the user attempted to enter a date but it was invalid
+              processedPayload[dateField] = null
+            }
+            // Remove the individual date fields
+            delete processedPayload[`${dateField}-day`]
+            delete processedPayload[`${dateField}-month`]
+            delete processedPayload[`${dateField}-year`]
+            delete processedPayload[`${dateField}_day`]
+            delete processedPayload[`${dateField}_month`]
+            delete processedPayload[`${dateField}_year`]
+          }
+        }
+      }
+
       // Update the form with the current page data
       await formService.updateForm(request, formId, {
         formName: form.formName,
-        page: 'applicantDetails', // Default to applicantDetails since this is a general save
-        data: request.payload
+        page: currentPage.section.startsWith('licensingConditions.')
+          ? 'licensingConditions'
+          : currentPage.section,
+        data: currentPage.section.startsWith('licensingConditions.')
+          ? {
+              ...(form.pages?.licensingConditions || {}),
+              [currentPage.section.split('.')[1]]: {
+                ...(form.pages?.licensingConditions?.[
+                  currentPage.section.split('.')[1]
+                ] || {}),
+                ...processedPayload
+              }
+            }
+          : processedPayload
       })
 
       return h.redirect('/dashboard')
@@ -358,6 +647,73 @@ export const formController = {
         error:
           'There was a problem processing your form. Please try again later.'
       })
+    }
+  }
+}
+
+/**
+ * Delete confirmation controller to display and process form deletion
+ * @satisfies {Partial<ServerRoute>}
+ */
+export const deleteConfirmationController = {
+  async handler(request, h) {
+    const { formId } = request.params
+
+    try {
+      // Get the form data from the API
+      const form = await formService.getFormById(request, formId)
+
+      if (!form) {
+        return h.redirect('/dashboard')
+      }
+
+      // Don't allow deletion of submitted forms
+      if (form.status === 'submitted') {
+        return h.redirect('/dashboard')
+      }
+
+      if (request.method === 'post') {
+        try {
+          // Delete the form via the API
+          await formService.deleteForm(request, formId)
+          return h.redirect('/dashboard')
+        } catch (error) {
+          request.logger.error(`Error deleting form ${formId}:`, error)
+          return addNoCacheHeaders(
+            h.view('form/templates/delete-confirmation', {
+              pageTitle: 'Delete application',
+              heading: 'Delete application',
+              formId,
+              formName: form.formName || 'Untitled Application',
+              error:
+                'There was a problem deleting your application. Please try again later.'
+            })
+          )
+        }
+      }
+
+      return addNoCacheHeaders(
+        h.view('form/templates/delete-confirmation', {
+          pageTitle: 'Delete application',
+          heading: 'Delete application',
+          formId,
+          formName: form.formName || 'Untitled Application'
+        })
+      )
+    } catch (error) {
+      request.logger.error(
+        `Error in delete confirmation controller for form ${formId}:`,
+        error
+      )
+      return addNoCacheHeaders(
+        h.view('form/templates/delete-confirmation', {
+          pageTitle: 'Delete application',
+          heading: 'Delete application',
+          formId,
+          error:
+            'There was a problem loading your application. Please try again later.'
+        })
+      )
     }
   }
 }
