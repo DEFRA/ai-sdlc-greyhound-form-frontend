@@ -94,9 +94,18 @@ export function formatDate(date) {
  * @returns {string|null} The ISO date string or null if invalid/missing date
  */
 export function combineDateFields(payload, prefix) {
-  const day = payload[`${prefix}-day`]
-  const month = payload[`${prefix}-month`]
-  const year = payload[`${prefix}-year`]
+  const day =
+    payload[`${prefix}_day`] ||
+    payload[`${prefix}-day`] ||
+    payload[`${prefix}_-day`]
+  const month =
+    payload[`${prefix}_month`] ||
+    payload[`${prefix}-month`] ||
+    payload[`${prefix}_-month`]
+  const year =
+    payload[`${prefix}_year`] ||
+    payload[`${prefix}-year`] ||
+    payload[`${prefix}_-year`]
 
   if (!day || !month || !year) {
     return null

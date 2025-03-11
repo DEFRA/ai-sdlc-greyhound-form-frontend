@@ -2,6 +2,18 @@ import { getFormPages, combineDateFields } from './helpers.js'
 import { formService } from './index.js'
 
 /**
+ * Helper function to add cache control headers to prevent caching
+ * @param {object} response - The response object
+ * @returns {object} The response object with cache control headers
+ */
+function addNoCacheHeaders(response) {
+  return response.header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, max-age=0'
+  )
+}
+
+/**
  * Dashboard controller to display saved forms
  * @satisfies {Partial<ServerRoute>}
  */
@@ -10,20 +22,24 @@ export const dashboardController = {
     try {
       const savedForms = await formService.getForms(request)
 
-      return h.view('form/templates/dashboard', {
-        pageTitle: 'Your saved forms',
-        heading: 'Your saved forms',
-        savedForms: savedForms || []
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/dashboard', {
+          pageTitle: 'Your saved forms',
+          heading: 'Your saved forms',
+          savedForms: savedForms || []
+        })
+      )
     } catch (error) {
       request.logger.error('Error in dashboard controller:', error)
-      return h.view('form/templates/dashboard', {
-        pageTitle: 'Your saved forms',
-        heading: 'Your saved forms',
-        savedForms: [],
-        error:
-          'There was a problem loading your saved forms. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/dashboard', {
+          pageTitle: 'Your saved forms',
+          heading: 'Your saved forms',
+          savedForms: [],
+          error:
+            'There was a problem loading your saved forms. Please try again later.'
+        })
+      )
     }
   }
 }
@@ -40,12 +56,14 @@ export const newFormController = {
 
         // Validate form name
         if (!payload.formName?.trim()) {
-          return h.view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: payload.formName,
-            error: 'Please enter an application name'
-          })
+          return addNoCacheHeaders(
+            h.view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: payload.formName,
+              error: 'Please enter an application name'
+            })
+          )
         }
 
         // Create a new form in the API
@@ -57,13 +75,15 @@ export const newFormController = {
 
         if (!newForm?.id) {
           request.logger.error('Failed to create form - missing form ID')
-          return h.view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: payload.formName,
-            error:
-              'There was a problem creating your application. Please try again.'
-          })
+          return addNoCacheHeaders(
+            h.view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: payload.formName,
+              error:
+                'There was a problem creating your application. Please try again.'
+            })
+          )
         }
 
         // Redirect to the first page of the form
@@ -76,21 +96,25 @@ export const newFormController = {
           error.message ||
           'There was a problem creating your application. Please try again.'
 
-        return h
-          .view('form/templates/new-form', {
-            pageTitle: 'Start a new application',
-            heading: 'Start a new application',
-            formName: request.payload?.formName,
-            error: errorMessage
-          })
-          .code(error.status || 500)
+        return addNoCacheHeaders(
+          h
+            .view('form/templates/new-form', {
+              pageTitle: 'Start a new application',
+              heading: 'Start a new application',
+              formName: request.payload?.formName,
+              error: errorMessage
+            })
+            .code(error.status || 500)
+        )
       }
     }
 
-    return h.view('form/templates/new-form', {
-      pageTitle: 'Start a new application',
-      heading: 'Start a new application'
-    })
+    return addNoCacheHeaders(
+      h.view('form/templates/new-form', {
+        pageTitle: 'Start a new application',
+        heading: 'Start a new application'
+      })
+    )
   }
 }
 
@@ -102,11 +126,11 @@ export const newFormController = {
 function splitDateString(isoDate) {
   if (!isoDate) return { day: '', month: '', year: '' }
 
-  // Parse the date string directly without creating a Date object
-  const [year, month, day] = isoDate.split('-')
+  // Parse the ISO date string directly to avoid timezone issues
+  const [year, month, day] = isoDate.split('T')[0].split('-')
   return {
-    day,
-    month,
+    day: parseInt(day, 10).toString(),
+    month: parseInt(month, 10).toString(),
     year
   }
 }
@@ -159,6 +183,9 @@ export const formPageController = {
             delete processedPayload['applicationDate-day']
             delete processedPayload['applicationDate-month']
             delete processedPayload['applicationDate-year']
+            delete processedPayload.applicationDate_day
+            delete processedPayload.applicationDate_month
+            delete processedPayload.applicationDate_year
           }
 
           // Handle condition dates only on their respective pages
@@ -191,6 +218,9 @@ export const formPageController = {
               delete processedPayload[`${dateField}-day`]
               delete processedPayload[`${dateField}-month`]
               delete processedPayload[`${dateField}-year`]
+              delete processedPayload[`${dateField}_day`]
+              delete processedPayload[`${dateField}_month`]
+              delete processedPayload[`${dateField}_year`]
             }
           }
 
@@ -233,6 +263,9 @@ export const formPageController = {
           delete processedPayload['applicationDate-day']
           delete processedPayload['applicationDate-month']
           delete processedPayload['applicationDate-year']
+          delete processedPayload.applicationDate_day
+          delete processedPayload.applicationDate_month
+          delete processedPayload.applicationDate_year
         }
 
         // Handle condition dates only on their respective pages
@@ -260,6 +293,9 @@ export const formPageController = {
             delete processedPayload[`${dateField}-day`]
             delete processedPayload[`${dateField}-month`]
             delete processedPayload[`${dateField}-year`]
+            delete processedPayload[`${dateField}_day`]
+            delete processedPayload[`${dateField}_month`]
+            delete processedPayload[`${dateField}_year`]
           }
         }
 
@@ -302,9 +338,9 @@ export const formPageController = {
         const { day, month, year } = splitDateString(
           sectionData.applicationDate
         )
-        sectionData.applicationDateDay = day
-        sectionData.applicationDateMonth = month
-        sectionData.applicationDateYear = year
+        sectionData.applicationDate_day = day
+        sectionData.applicationDate_month = month
+        sectionData.applicationDate_year = year
       }
 
       // Split condition date fields for display
@@ -321,42 +357,46 @@ export const formPageController = {
       for (const dateField of dateFields) {
         if (sectionData[dateField]) {
           const { day, month, year } = splitDateString(sectionData[dateField])
-          sectionData[`${dateField}Day`] = day
-          sectionData[`${dateField}Month`] = month
-          sectionData[`${dateField}Year`] = year
+          sectionData[`${dateField}_day`] = day
+          sectionData[`${dateField}_month`] = month
+          sectionData[`${dateField}_year`] = year
         }
       }
 
-      return h.view(`form/templates/${page.template}`, {
-        pageTitle: page.title,
-        heading: page.title,
-        formId,
-        currentPage,
-        totalPages: pages.length,
-        backLink:
-          currentPage > 1
-            ? `/form/${formId}/page/${currentPage - 1}`
-            : '/dashboard',
-        ...sectionData
-      })
+      return addNoCacheHeaders(
+        h.view(`form/templates/${page.template}`, {
+          pageTitle: page.title,
+          heading: page.title,
+          formId,
+          currentPage,
+          totalPages: pages.length,
+          backLink:
+            currentPage > 1
+              ? `/form/${formId}/page/${currentPage - 1}`
+              : '/dashboard',
+          ...sectionData
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in form page controller for page ${currentPage}:`,
         error
       )
-      return h.view(`form/templates/${page.template}`, {
-        pageTitle: page.title,
-        heading: page.title,
-        formId,
-        currentPage,
-        totalPages: pages.length,
-        backLink:
-          currentPage > 1
-            ? `/form/${formId}/page/${currentPage - 1}`
-            : '/dashboard',
-        error:
-          'There was a problem loading your application. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view(`form/templates/${page.template}`, {
+          pageTitle: page.title,
+          heading: page.title,
+          formId,
+          currentPage,
+          totalPages: pages.length,
+          backLink:
+            currentPage > 1
+              ? `/form/${formId}/page/${currentPage - 1}`
+              : '/dashboard',
+          error:
+            'There was a problem loading your application. Please try again later.'
+        })
+      )
     }
   }
 }
@@ -391,25 +431,29 @@ export const reviewFormController = {
         return h.redirect(`/form/${formId}/confirmation`)
       }
 
-      return h.view('form/templates/review', {
-        pageTitle: 'Review your application',
-        heading: 'Review your application',
-        formId,
-        formData: form.pages,
-        pages: getFormPages()
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/review', {
+          pageTitle: 'Review your application',
+          heading: 'Review your application',
+          formId,
+          formData: form.pages,
+          pages: getFormPages()
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in review form controller for form ${formId}:`,
         error
       )
-      return h.view('form/templates/review', {
-        pageTitle: 'Review your application',
-        heading: 'Review your application',
-        formId,
-        error:
-          'There was a problem loading your application. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/review', {
+          pageTitle: 'Review your application',
+          heading: 'Review your application',
+          formId,
+          error:
+            'There was a problem loading your application. Please try again later.'
+        })
+      )
     }
   }
 }
@@ -430,22 +474,26 @@ export const confirmationController = {
         return h.redirect('/dashboard')
       }
 
-      return h.view('form/templates/confirmation', {
-        pageTitle: 'Application complete',
-        heading: 'Application complete',
-        formId,
-        referenceNumber: form.referenceNumber || 'HDJ2123F'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/confirmation', {
+          pageTitle: 'Application complete',
+          heading: 'Application complete',
+          formId,
+          referenceNumber: form.referenceNumber || 'HDJ2123F'
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in confirmation controller for form ${formId}:`,
         error
       )
-      return h.view('form/templates/confirmation', {
-        pageTitle: 'Application complete',
-        heading: 'Application complete',
-        referenceNumber: 'HDJ2123F'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/confirmation', {
+          pageTitle: 'Application complete',
+          heading: 'Application complete',
+          referenceNumber: 'HDJ2123F'
+        })
+      )
     }
   }
 }
@@ -488,6 +536,9 @@ export const saveFormController = {
         delete processedPayload['applicationDate-day']
         delete processedPayload['applicationDate-month']
         delete processedPayload['applicationDate-year']
+        delete processedPayload.applicationDate_day
+        delete processedPayload.applicationDate_month
+        delete processedPayload.applicationDate_year
       }
 
       // Handle condition dates only on their respective pages
@@ -515,6 +566,9 @@ export const saveFormController = {
           delete processedPayload[`${dateField}-day`]
           delete processedPayload[`${dateField}-month`]
           delete processedPayload[`${dateField}-year`]
+          delete processedPayload[`${dateField}_day`]
+          delete processedPayload[`${dateField}_month`]
+          delete processedPayload[`${dateField}_year`]
         }
       }
 
@@ -605,35 +659,41 @@ export const deleteConfirmationController = {
           return h.redirect('/dashboard')
         } catch (error) {
           request.logger.error(`Error deleting form ${formId}:`, error)
-          return h.view('form/templates/delete-confirmation', {
-            pageTitle: 'Delete application',
-            heading: 'Delete application',
-            formId,
-            formName: form.formName || 'Untitled Application',
-            error:
-              'There was a problem deleting your application. Please try again later.'
-          })
+          return addNoCacheHeaders(
+            h.view('form/templates/delete-confirmation', {
+              pageTitle: 'Delete application',
+              heading: 'Delete application',
+              formId,
+              formName: form.formName || 'Untitled Application',
+              error:
+                'There was a problem deleting your application. Please try again later.'
+            })
+          )
         }
       }
 
-      return h.view('form/templates/delete-confirmation', {
-        pageTitle: 'Delete application',
-        heading: 'Delete application',
-        formId,
-        formName: form.formName || 'Untitled Application'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/delete-confirmation', {
+          pageTitle: 'Delete application',
+          heading: 'Delete application',
+          formId,
+          formName: form.formName || 'Untitled Application'
+        })
+      )
     } catch (error) {
       request.logger.error(
         `Error in delete confirmation controller for form ${formId}:`,
         error
       )
-      return h.view('form/templates/delete-confirmation', {
-        pageTitle: 'Delete application',
-        heading: 'Delete application',
-        formId,
-        error:
-          'There was a problem loading your application. Please try again later.'
-      })
+      return addNoCacheHeaders(
+        h.view('form/templates/delete-confirmation', {
+          pageTitle: 'Delete application',
+          heading: 'Delete application',
+          formId,
+          error:
+            'There was a problem loading your application. Please try again later.'
+        })
+      )
     }
   }
 }
