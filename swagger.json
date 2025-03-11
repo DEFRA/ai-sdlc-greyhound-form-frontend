@@ -1,0 +1,130 @@
+{
+  "basePath": "/",
+  "info": {
+    "title": "Greyhound Form API Documentation",
+    "version": "0.0.0",
+    "description": "API for managing greyhound racetrack welfare licence application forms"
+  },
+  "swagger": "2.0",
+  "host": "localhost:3001",
+  "schemes": ["http"],
+  "tags": [],
+  "paths": {
+    "/api/forms": {
+      "get": {
+        "operationId": "getApiForms",
+        "parameters": [
+          {
+            "type": "string",
+            "enum": ["in-progress", "submitted"],
+            "name": "status",
+            "in": "query",
+            "required": false
+          }
+        ],
+        "tags": ["forms"],
+        "responses": {
+          "200": {
+            "description": "Forms retrieved successfully",
+            "schema": { "type": "string" }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postApiForms",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": { "$ref": "#/definitions/Model1" }
+          }
+        ],
+        "tags": ["forms"],
+        "responses": {
+          "201": { "description": "Form created successfully" },
+          "400": { "description": "Invalid request payload" }
+        }
+      }
+    },
+    "/api/forms/{formId}": {
+      "get": {
+        "operationId": "getApiFormsFormid",
+        "parameters": [
+          { "type": "string", "name": "formId", "in": "path", "required": true }
+        ],
+        "tags": ["forms"],
+        "responses": {
+          "200": {
+            "description": "Form retrieved successfully",
+            "schema": { "type": "string" }
+          },
+          "404": { "description": "Form not found" }
+        }
+      },
+      "put": {
+        "operationId": "putApiFormsFormid",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "formId",
+            "in": "path",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": { "$ref": "#/definitions/Model2" }
+          }
+        ],
+        "tags": ["forms"],
+        "responses": {
+          "200": {
+            "description": "Form updated successfully",
+            "schema": { "type": "string" }
+          },
+          "400": { "description": "Invalid request payload" },
+          "404": { "description": "Form not found" }
+        }
+      }
+    },
+    "/api/forms/{formId}/submit": {
+      "post": {
+        "operationId": "postApiFormsFormidSubmit",
+        "parameters": [
+          { "type": "string", "name": "formId", "in": "path", "required": true }
+        ],
+        "tags": ["forms"],
+        "responses": {
+          "200": {
+            "description": "Form submitted successfully",
+            "schema": { "type": "string" }
+          },
+          "400": { "description": "Form cannot be submitted" },
+          "404": { "description": "Form not found" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Model1": {
+      "type": "object",
+      "properties": {
+        "formName": { "type": "string", "minLength": 1, "maxLength": 100 }
+      },
+      "required": ["formName"]
+    },
+    "page": {
+      "type": "string",
+      "enum": ["applicantDetails", "licensingConditions"]
+    },
+    "data": { "type": "object" },
+    "Model2": {
+      "type": "object",
+      "properties": {
+        "formName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "page": { "$ref": "#/definitions/page" },
+        "data": { "$ref": "#/definitions/data" }
+      }
+    }
+  }
+}

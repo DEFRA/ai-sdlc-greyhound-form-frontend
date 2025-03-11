@@ -1,0 +1,97 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <strong>Condition 5:</strong> The licence holder must ensure that records are kept of all greyhounds racing at the track, including details of their owners and trainers.
+      </p>
+
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "recordsKept",
+          name: "recordsKept",
+          fieldset: {
+            legend: {
+              text: "Do you keep records of all greyhounds racing at the track?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: recordsKept === true
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: recordsKept === false,
+              conditional: {
+                html: govukDateInput({
+                  id: "anticipatedRecordsDate",
+                  namePrefix: "anticipatedRecordsDate",
+                  fieldset: {
+                    legend: {
+                      text: "When do you anticipate having this record-keeping system in place?",
+                      isPageHeading: false,
+                      classes: "govuk-fieldset__legend--s"
+                    }
+                  },
+                  hint: {
+                    text: "For example, 27 3 2023"
+                  },
+                  items: [
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "day",
+                      value: anticipatedRecordsDateDay
+                    },
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "month",
+                      value: anticipatedRecordsDateMonth
+                    },
+                    {
+                      classes: "govuk-input--width-4",
+                      name: "year",
+                      value: anticipatedRecordsDateYear
+                    }
+                  ]
+                })
+              }
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

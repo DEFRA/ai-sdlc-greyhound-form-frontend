@@ -1,0 +1,119 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukInput({
+          label: {
+            text: "Racetrack name",
+            classes: "govuk-label--m"
+          },
+          id: "racetrackName",
+          name: "racetrackName",
+          value: racetrackName
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Your name",
+            classes: "govuk-label--m"
+          },
+          id: "applicantName",
+          name: "applicantName",
+          value: applicantName
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Your address",
+            classes: "govuk-label--m"
+          },
+          id: "applicantAddress",
+          name: "applicantAddress",
+          value: applicantAddress
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Your postcode",
+            classes: "govuk-label--m"
+          },
+          id: "applicantPostcode",
+          name: "applicantPostcode",
+          value: applicantPostcode,
+          classes: "govuk-input--width-10"
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Racetrack address",
+            classes: "govuk-label--m"
+          },
+          id: "racetrackAddress",
+          name: "racetrackAddress",
+          value: racetrackAddress
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Racetrack postcode",
+            classes: "govuk-label--m"
+          },
+          id: "racetrackPostcode",
+          name: "racetrackPostcode",
+          value: racetrackPostcode,
+          classes: "govuk-input--width-10"
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Telephone number",
+            classes: "govuk-label--m"
+          },
+          id: "telephone",
+          name: "telephone",
+          value: telephone,
+          classes: "govuk-input--width-20"
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Email address",
+            classes: "govuk-label--m"
+          },
+          id: "email",
+          name: "email",
+          type: "email",
+          value: email
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

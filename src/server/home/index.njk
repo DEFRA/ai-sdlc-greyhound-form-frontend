@@ -3,57 +3,61 @@
 {% block content %}
   {{ appHeading({
     text: heading,
-    caption: "Core delivery platform Node.js Frontend Template."
+    caption: "GOV.UK Service"
   }) }}
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <div class="govuk-body" data-testid="app-page-body">
-        <p>
-          Welcome to the Frontend Template, a starter kit for Core Delivery Platform Node.js Frontends 🚀
+        <p class="govuk-body-l">
+          Apply for a licence to operate a greyhound racetrack in accordance with welfare standards.
         </p>
+        
         <p>
-          Based on <a href="https://defra.github.io/software-development-standards">DEFRA</a> and <a
-            href="https://design-system.service.gov.uk/">GOV.UK</a> best practices this starter kit provides you with
-          a deployable, production ready template 🙌🏻 to start your new service with.
+          This service allows racetrack operators to apply for a welfare licence by demonstrating compliance with the required welfare conditions.
         </p>
-        <p>This template comes with:</p>
-        <ul>
-          <li>
-            <a href="https://frontend.design-system.service.gov.uk/">GOV.UK Frontend</a>
-          </li>
-          <li>
-            <a href="https://hapi.dev">Hapi.js</a>
-          </li>
-          <li>
-            <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a>
-          </li>
-          <li>
-            <a href="https://github.com/mozilla/node-convict">Node Convict</a>
-          </li>
-          <li>
-            <a href="https://jestjs.io/">Jest testing</a>
-          </li>
-          <li>GitHub Actions Pull Request and Publish jobs</li>
-          <li>
-            <a href="https://github.com/pinojs/pino">PinoJs logging</a>
-          </li>
-          <li>
-            <a href="https://standardjs.com">Standard JS</a>
-          </li>
-          <li>
-            <a href="https://eslint.org">ESLint</a>
-          </li>
-          <li>
-            <a href="https://stylelint.io">StyleLint</a>
-          </li>
-          <li>
-            <a href="https://prettier.io">Prettier</a>
-          </li>
-          <li>and lots more... 😎</li>
+        
+        <h2 class="govuk-heading-m">Before you start</h2>
+        
+        <p>
+          You'll need to provide information about:
+        </p>
+        
+        <ul class="govuk-list govuk-list--bullet">
+          <li>your racetrack name and location</li>
+          <li>your contact details</li>
+          <li>veterinary surgeon arrangements</li>
+          <li>facilities for veterinary care</li>
+          <li>kennel availability</li>
+          <li>greyhound identification procedures</li>
+          <li>record keeping systems</li>
+          <li>injury recording processes</li>
         </ul>
+        
+        <p>
+          You can save your application at any point and return to complete it later.
+        </p>
+        
+        <h2 class="govuk-heading-m">Application process</h2>
+        
+        <ol class="govuk-list govuk-list--number">
+          <li>Start a new application or continue a saved one</li>
+          <li>Complete all sections of the form</li>
+          <li>Review your answers before submission</li>
+          <li>Submit your completed application</li>
+        </ol>
+        
+        <p>
+          The application takes approximately 20-30 minutes to complete if you have all the required information ready.
+        </p>
+        
+        <a href="/dashboard" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+          Start now
+          <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z" />
+          </svg>
+        </a>
       </div>
     </div>
   </div>
-
 {% endblock %}

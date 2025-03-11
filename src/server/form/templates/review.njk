@@ -1,0 +1,366 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: "/form/" + formId + "/page/9"
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: error
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <p class="govuk-body">
+        Check your answers before submitting your application.
+      </p>
+
+      <h2 class="govuk-heading-m">Applicant details</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Racetrack name"
+            },
+            value: {
+              text: formData.applicantDetails.racetrackName or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "racetrack name"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Your name"
+            },
+            value: {
+              text: formData.applicantDetails.applicantName or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "your name"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Your address"
+            },
+            value: {
+              text: formData.applicantDetails.applicantAddress or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "your address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Your postcode"
+            },
+            value: {
+              text: formData.applicantDetails.applicantPostcode or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "your postcode"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Racetrack address"
+            },
+            value: {
+              text: formData.applicantDetails.racetrackAddress or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "racetrack address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Racetrack postcode"
+            },
+            value: {
+              text: formData.applicantDetails.racetrackPostcode or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "racetrack postcode"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Telephone number"
+            },
+            value: {
+              text: formData.applicantDetails.telephone or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "telephone number"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Email address"
+            },
+            value: {
+              text: formData.applicantDetails.email or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/1",
+                  text: "Change",
+                  visuallyHiddenText: "email address"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Disqualified"
+            },
+            value: {
+              text: formData.applicantDetails.disqualified ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/2",
+                  text: "Change",
+                  visuallyHiddenText: "disqualification status"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h2 class="govuk-heading-m">Licensing conditions</h2>
+      
+      <h3 class="govuk-heading-s">Condition 1: Veterinary Surgeon</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Veterinary surgeon agreement"
+            },
+            value: {
+              text: formData.licensingConditions.condition1.hasVetAgreement ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/3",
+                  text: "Change",
+                  visuallyHiddenText: "veterinary surgeon agreement"
+                }
+              ]
+            }
+          },
+          {
+            key: {
+              text: "Veterinary surgeon contact"
+            },
+            value: {
+              text: formData.licensingConditions.condition1.vetContact or 'Not provided'
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/3",
+                  text: "Change",
+                  visuallyHiddenText: "veterinary surgeon contact"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h3 class="govuk-heading-s">Condition 2: Facilities</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Facilities ready"
+            },
+            value: {
+              text: formData.licensingConditions.condition2.facilitiesReady ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/5",
+                  text: "Change",
+                  visuallyHiddenText: "facilities ready"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h3 class="govuk-heading-s">Condition 3: Kennels</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Kennels ready"
+            },
+            value: {
+              text: formData.licensingConditions.condition3.kennelsReady ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/6",
+                  text: "Change",
+                  visuallyHiddenText: "kennels ready"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h3 class="govuk-heading-s">Condition 4: Greyhound Identification</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Greyhound identification"
+            },
+            value: {
+              text: formData.licensingConditions.condition4.greyhoundIdentified ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/7",
+                  text: "Change",
+                  visuallyHiddenText: "greyhound identification"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h3 class="govuk-heading-s">Condition 5: Record Keeping</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Records kept"
+            },
+            value: {
+              text: formData.licensingConditions.condition5.recordsKept ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/8",
+                  text: "Change",
+                  visuallyHiddenText: "records kept"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <h3 class="govuk-heading-s">Condition 6: Injury Records</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Injury records kept"
+            },
+            value: {
+              text: formData.licensingConditions.condition6.injuryRecordsKept ? "Yes" : "No"
+            },
+            actions: {
+              items: [
+                {
+                  href: "/form/" + formId + "/page/9",
+                  text: "Change",
+                  visuallyHiddenText: "injury records kept"
+                }
+              ]
+            }
+          }
+        ]
+      }) }}
+
+      <form method="post" action="/form/{{ formId }}/review" novalidate>
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Submit application"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

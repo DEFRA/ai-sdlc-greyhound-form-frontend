@@ -22,7 +22,9 @@ describe('#errors', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Page not found | ai-sdlc-greyhound-form-frontend')
+      expect.stringContaining(
+        'Page not found | Greyhound Racetrack Welfare Licence'
+      )
     )
     expect(statusCode).toBe(statusCodes.notFound)
   })

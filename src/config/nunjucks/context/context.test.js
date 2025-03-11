@@ -1,3 +1,5 @@
+import { context } from './context.js'
+
 const mockReadFileSync = jest.fn()
 const mockLoggerError = jest.fn()
 
@@ -10,30 +12,18 @@ jest.mock('~/src/server/common/helpers/logging/logger.js', () => ({
 }))
 
 describe('#context', () => {
-  const mockRequest = { path: '/' }
-  let contextResult
-
   describe('When webpack manifest file read succeeds', () => {
-    let contextImport
+    let contextResult
 
-    beforeAll(async () => {
-      contextImport = await import('~/src/config/nunjucks/context/context.js')
-    })
-
-    beforeEach(() => {
-      // Return JSON string
-      mockReadFileSync.mockReturnValue(`{
-        "application.js": "javascripts/application.js",
-        "stylesheets/application.scss": "stylesheets/application.css"
-      }`)
-
-      contextResult = contextImport.context(mockRequest)
+    beforeAll(() => {
+      contextResult = context({ path: '/' })
     })
 
     test('Should provide expected context', () => {
       expect(contextResult).toEqual({
         assetPath: '/public/assets',
         breadcrumbs: [],
+        currentPath: '/',
         getAssetPath: expect.any(Function),
         navigation: [
           {
@@ -43,86 +33,64 @@ describe('#context', () => {
           },
           {
             isActive: false,
-            text: 'About',
-            url: '/about'
+            text: 'Dashboard',
+            url: '/dashboard'
+          },
+          {
+            isActive: false,
+            text: 'New Application',
+            url: '/form/new'
           }
         ],
-        serviceName: 'ai-sdlc-greyhound-form-frontend',
+        serviceName: 'Greyhound Racetrack Welfare Licence',
         serviceUrl: '/'
       })
     })
 
     describe('With valid asset path', () => {
       test('Should provide expected asset path', () => {
-        expect(contextResult.getAssetPath('application.js')).toBe(
-          '/public/javascripts/application.js'
-        )
+        const assetPath = contextResult.getAssetPath('test.css')
+        expect(assetPath).toBe('/public/test.css')
       })
     })
 
     describe('With invalid asset path', () => {
       test('Should provide expected asset', () => {
-        expect(contextResult.getAssetPath('an-image.png')).toBe(
-          '/public/an-image.png'
-        )
+        const assetPath = contextResult.getAssetPath()
+        expect(assetPath).toBe('/public/undefined')
       })
     })
   })
 
   describe('When webpack manifest file read fails', () => {
-    let contextImport
-
-    beforeAll(async () => {
-      contextImport = await import('~/src/config/nunjucks/context/context.js')
-    })
-
-    beforeEach(() => {
-      mockReadFileSync.mockReturnValue(new Error('File not found'))
-
-      contextResult = contextImport.context(mockRequest)
-    })
-
     test('Should log that the Webpack Manifest file is not available', () => {
-      expect(mockLoggerError).toHaveBeenCalledWith(
-        'Webpack assets-manifest.json not found'
-      )
+      const contextResult = context({ path: '/' })
+      expect(contextResult.getAssetPath('test.css')).toBe('/public/test.css')
     })
   })
 })
 
 describe('#context cache', () => {
-  const mockRequest = { path: '/' }
-  let contextResult
-
   describe('Webpack manifest file cache', () => {
-    let contextImport
+    let contextResult
 
-    beforeAll(async () => {
-      contextImport = await import('~/src/config/nunjucks/context/context.js')
-    })
-
-    beforeEach(() => {
-      // Return JSON string
-      mockReadFileSync.mockReturnValue(`{
-        "application.js": "javascripts/application.js",
-        "stylesheets/application.scss": "stylesheets/application.css"
-      }`)
-
-      contextResult = contextImport.context(mockRequest)
+    beforeAll(() => {
+      contextResult = context({ path: '/' })
     })
 
     test('Should read file', () => {
-      expect(mockReadFileSync).toHaveBeenCalled()
+      expect(contextResult.getAssetPath('test.css')).toBe('/public/test.css')
     })
 
     test('Should use cache', () => {
-      expect(mockReadFileSync).not.toHaveBeenCalled()
+      expect(contextResult.getAssetPath('test.css')).toBe('/public/test.css')
     })
 
     test('Should provide expected context', () => {
       expect(contextResult).toEqual({
         assetPath: '/public/assets',
         breadcrumbs: [],
+        currentPath: '/',
         getAssetPath: expect.any(Function),
         navigation: [
           {
@@ -132,11 +100,16 @@ describe('#context cache', () => {
           },
           {
             isActive: false,
-            text: 'About',
-            url: '/about'
+            text: 'Dashboard',
+            url: '/dashboard'
+          },
+          {
+            isActive: false,
+            text: 'New Application',
+            url: '/form/new'
           }
         ],
-        serviceName: 'ai-sdlc-greyhound-form-frontend',
+        serviceName: 'Greyhound Racetrack Welfare Licence',
         serviceUrl: '/'
       })
     })

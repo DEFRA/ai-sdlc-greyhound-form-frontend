@@ -6,8 +6,8 @@
 export const homeController = {
   handler(_request, h) {
     return h.view('home/index', {
-      pageTitle: 'Home',
-      heading: 'Home'
+      pageTitle: 'Greyhound Racetrack Welfare Licence Application',
+      heading: 'Greyhound Racetrack Welfare Licence Application'
     })
   }
 }

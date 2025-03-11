@@ -1,0 +1,97 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <strong>Condition 1 (continued):</strong> The licence holder must ensure that a register of all veterinary surgeons who attend the racetrack is maintained.
+      </p>
+
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "hasVetRegister",
+          name: "hasVetRegister",
+          fieldset: {
+            legend: {
+              text: "Do you have a register of veterinary surgeons who attend the racetrack?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: hasVetRegister === true
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: hasVetRegister === false,
+              conditional: {
+                html: govukDateInput({
+                  id: "anticipatedRegisterDate",
+                  namePrefix: "anticipatedRegisterDate",
+                  fieldset: {
+                    legend: {
+                      text: "When do you anticipate having this register in place?",
+                      isPageHeading: false,
+                      classes: "govuk-fieldset__legend--s"
+                    }
+                  },
+                  hint: {
+                    text: "For example, 27 3 2023"
+                  },
+                  items: [
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "day",
+                      value: anticipatedRegisterDateDay
+                    },
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "month",
+                      value: anticipatedRegisterDateMonth
+                    },
+                    {
+                      classes: "govuk-input--width-4",
+                      name: "year",
+                      value: anticipatedRegisterDateYear
+                    }
+                  ]
+                })
+              }
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 
