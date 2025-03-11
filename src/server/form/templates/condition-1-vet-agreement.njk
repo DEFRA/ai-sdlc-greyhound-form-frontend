@@ -2,6 +2,7 @@
 
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
 {% from "govuk/components/date-input/macro.njk" import govukDateInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -21,9 +22,15 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <p class="govuk-body">
-        <strong>Condition 1:</strong> The licence holder must ensure that a veterinary surgeon who is a member of the Royal College of Veterinary Surgeons is present at the racetrack on each day on which races take place.
-      </p>
+
+      <p class="govuk-body">A summary of the licensing conditions required by the Welfare of Racing Greyhounds Regulations 2010 can be
+      found in the Defra guidance produced to accompany the Regulations. The Guidance can be found on the Defra
+      website <a href="http://www.defra.gov.uk/foodfarm/farmanimal/welfare/act/documents/greyhound-regs.pdf" class="govuk-link">here</a>.</p>
+
+      <h3 class="govuk-heading-m">Condition 1: Attendance of a veterinary surgeon</h3>
+
+      <p class="govuk-body">Page 8 of the Defra guidance on the Regulations explains in more detail when you need to have a veterinary
+      surgeon in attendance and what veterinary surgeons are suitable.</p>
 
       <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
         {{ govukRadios({
@@ -31,7 +38,8 @@
           name: "hasVetAgreement",
           fieldset: {
             legend: {
-              text: "Do you have an agreement with a veterinary surgeon to attend on race days?",
+              text: "Have you an agreement in place with a suitable veterinary surgeon or practice to attend
+the track as required by the Regulations?",
               isPageHeading: false,
               classes: "govuk-fieldset__legend--m"
             }
@@ -83,7 +91,7 @@
           ]
         }) }}
 
-        {{ govukInput({
+        {{ govukTextarea({
           label: {
             text: "Veterinary surgeon contact details",
             classes: "govuk-label--m"
@@ -93,7 +101,8 @@
           },
           id: "vetContact",
           name: "vetContact",
-          value: vetContact
+          value: vetContact,
+          rows: 5
         }) }}
 
         <div class="govuk-button-group">

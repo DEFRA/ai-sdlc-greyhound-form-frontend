@@ -18,7 +18,7 @@ export function getFormPages() {
     },
     {
       id: 'condition-1-vet-agreement',
-      title: 'Condition 1: Veterinary Surgeon Agreement',
+      title: 'Licensing Conditions',
       template: 'condition-1-vet-agreement',
       section: 'licensingConditions.condition1'
     },

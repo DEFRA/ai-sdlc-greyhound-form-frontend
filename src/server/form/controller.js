@@ -199,7 +199,15 @@ export const formPageController = {
               ? 'licensingConditions'
               : page.section,
             data: page.section.startsWith('licensingConditions.')
-              ? { [page.section.split('.')[1]]: processedPayload }
+              ? {
+                  ...(form.pages?.licensingConditions || {}),
+                  [page.section.split('.')[1]]: {
+                    ...(form.pages?.licensingConditions?.[
+                      page.section.split('.')[1]
+                    ] || {}),
+                    ...processedPayload
+                  }
+                }
               : processedPayload
           }
 
@@ -260,7 +268,15 @@ export const formPageController = {
             ? 'licensingConditions'
             : page.section,
           data: page.section.startsWith('licensingConditions.')
-            ? { [page.section.split('.')[1]]: processedPayload }
+            ? {
+                ...(form.pages?.licensingConditions || {}),
+                [page.section.split('.')[1]]: {
+                  ...(form.pages?.licensingConditions?.[
+                    page.section.split('.')[1]
+                  ] || {}),
+                  ...processedPayload
+                }
+              }
             : processedPayload
         }
 
@@ -275,7 +291,9 @@ export const formPageController = {
       }
 
       // Get the section data for the current page
-      const sectionData = form.pages?.[page.section] || {}
+      const sectionData = page.section.startsWith('licensingConditions.')
+        ? form.pages?.licensingConditions?.[page.section.split('.')[1]] || {}
+        : form.pages?.[page.section] || {}
 
       // Split date fields for display if needed
       if (page.id === 'disqualification' && sectionData.applicationDate) {
@@ -505,7 +523,15 @@ export const saveFormController = {
           ? 'licensingConditions'
           : currentPage.section,
         data: currentPage.section.startsWith('licensingConditions.')
-          ? { [currentPage.section.split('.')[1]]: processedPayload }
+          ? {
+              ...(form.pages?.licensingConditions || {}),
+              [currentPage.section.split('.')[1]]: {
+                ...(form.pages?.licensingConditions?.[
+                  currentPage.section.split('.')[1]
+                ] || {}),
+                ...processedPayload
+              }
+            }
           : processedPayload
       })
 
