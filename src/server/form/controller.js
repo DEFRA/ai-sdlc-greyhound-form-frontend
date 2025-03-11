@@ -442,15 +442,18 @@ export const reviewFormController = {
         return h.redirect(`/form/${formId}/confirmation`)
       }
 
-      return addNoCacheHeaders(
-        h.view('form/templates/review', {
-          pageTitle: 'Review your application',
-          heading: 'Review your application',
-          formId,
-          formData: form.pages || {},
-          pages: getFormPages()
-        })
-      )
+      // Prepare the view data
+      const viewData = {
+        pageTitle: 'Review your application',
+        heading: 'Review your application',
+        formId,
+        formData: form.pages || {},
+        pages: getFormPages(),
+        status: form.status || 'draft',
+        showChangeLinks: form.status !== 'submitted'
+      }
+
+      return addNoCacheHeaders(h.view('form/templates/review', viewData))
     } catch (error) {
       request.logger.error(
         `Error in review form controller for form ${formId}:`,
@@ -463,7 +466,9 @@ export const reviewFormController = {
           formId,
           formData: {},
           error:
-            'There was a problem loading your application. Please try again later.'
+            'There was a problem loading your application. Please try again later.',
+          status: 'draft',
+          showChangeLinks: true
         })
       )
     }
