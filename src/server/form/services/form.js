@@ -54,7 +54,7 @@ class FormService {
       return await apiService.post('/api/forms', formData)
     } catch (error) {
       request.logger.error('Error creating form:', error)
-      throw error
+      return null
     }
   }
 
@@ -95,7 +95,7 @@ class FormService {
       return await apiService.post(`/api/forms/${formId}/submit`, {})
     } catch (error) {
       request.logger.error(`Error submitting form ${formId}:`, error)
-      throw error
+      return null
     }
   }
 }

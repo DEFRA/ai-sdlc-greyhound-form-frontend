@@ -50,8 +50,7 @@ export const newFormController = {
 
         // Create a new form in the API
         const newForm = await formService.createForm(request, {
-          formName: payload.formName.trim(),
-          status: 'in-progress'
+          formName: payload.formName.trim()
         })
 
         if (!newForm) {

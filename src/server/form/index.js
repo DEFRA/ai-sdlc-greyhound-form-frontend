@@ -6,6 +6,9 @@ import {
   confirmationController,
   saveFormController
 } from './controller.js'
+import FormService from './services/form.js'
+
+const formService = new FormService()
 
 /**
  * Sets up the routes used in the form pages.
@@ -20,6 +23,7 @@ export const form = {
     name: 'form',
     register(server) {
       server.route([
+        // Frontend UI routes
         {
           method: 'GET',
           path: '/dashboard',
@@ -64,6 +68,55 @@ export const form = {
           method: 'POST',
           path: '/form/{formId}/save',
           ...saveFormController
+        },
+
+        // API routes matching swagger spec
+        {
+          method: 'GET',
+          path: '/api/forms',
+          handler: async (request, h) => {
+            return h.response(await formService.getForms(request))
+          }
+        },
+        {
+          method: 'POST',
+          path: '/api/forms',
+          handler: async (request, h) => {
+            return h.response(
+              await formService.createForm(request, request.payload)
+            )
+          }
+        },
+        {
+          method: 'GET',
+          path: '/api/forms/{formId}',
+          handler: async (request, h) => {
+            return h.response(
+              await formService.getFormById(request, request.params.formId)
+            )
+          }
+        },
+        {
+          method: 'PUT',
+          path: '/api/forms/{formId}',
+          handler: async (request, h) => {
+            return h.response(
+              await formService.updateForm(
+                request,
+                request.params.formId,
+                request.payload
+              )
+            )
+          }
+        },
+        {
+          method: 'POST',
+          path: '/api/forms/{formId}/submit',
+          handler: async (request, h) => {
+            return h.response(
+              await formService.submitForm(request, request.params.formId)
+            )
+          }
         }
       ])
     }
