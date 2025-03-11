@@ -1,0 +1,70 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {% if error %}
+        {{ govukErrorSummary({
+          titleText: "There is a problem",
+          errorList: [
+            {
+              text: error
+            }
+          ]
+        }) }}
+      {% endif %}
+
+      <p class="govuk-body">
+        This page shows your saved greyhound racetrack welfare licence applications.
+      </p>
+
+      {% if savedForms and savedForms.length > 0 %}
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Your saved applications</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Application name</th>
+              <th scope="col" class="govuk-table__header">Status</th>
+              <th scope="col" class="govuk-table__header">Last updated</th>
+              <th scope="col" class="govuk-table__header">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for form in savedForms %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">{{ form.name }}</td>
+                <td class="govuk-table__cell">
+                  {% if form.status === 'in-progress' %}
+                    <strong class="govuk-tag govuk-tag--blue">In progress</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--green">Submitted</strong>
+                  {% endif %}
+                </td>
+                <td class="govuk-table__cell">{{ form.updatedAt | date("DD MMMM YYYY") }}</td>
+                <td class="govuk-table__cell">
+                  {% if form.status === 'in-progress' %}
+                    <a href="/form/{{ form.id }}/page/1" class="govuk-link">Continue</a>
+                  {% else %}
+                    <a href="/form/{{ form.id }}/review" class="govuk-link">View</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="govuk-body">You have no saved applications.</p>
+      {% endif %}
+
+      <a href="/form/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+        Start new application
+      </a>
+    </div>
+  </div>
+{% endblock %} 

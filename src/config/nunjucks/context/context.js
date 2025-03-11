@@ -29,10 +29,11 @@ export function context(request) {
 
   return {
     assetPath: `${assetPath}/assets`,
-    serviceName: config.get('serviceName'),
+    serviceName: 'Greyhound Racetrack Welfare Licence',
     serviceUrl: '/',
     breadcrumbs: [],
     navigation: buildNavigation(request),
+    currentPath: request?.path ?? '/',
 
     /**
      * @param {string} asset

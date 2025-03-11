@@ -1,0 +1,103 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "disqualified",
+          name: "disqualified",
+          fieldset: {
+            legend: {
+              text: "Have you been disqualified from holding a licence under the Animal Welfare Act 2006?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: disqualified === true,
+              conditional: {
+                html: govukTextarea({
+                  id: "disqualificationDetails",
+                  name: "disqualificationDetails",
+                  label: {
+                    text: "Provide details of your disqualification"
+                  },
+                  value: disqualificationDetails
+                })
+              }
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: disqualified === false
+            }
+          ]
+        }) }}
+
+        {{ govukDateInput({
+          id: "applicationDate",
+          namePrefix: "applicationDate",
+          fieldset: {
+            legend: {
+              text: "Date of application",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          hint: {
+            text: "For example, 27 3 2023"
+          },
+          items: [
+            {
+              classes: "govuk-input--width-2",
+              name: "day",
+              value: applicationDateDay
+            },
+            {
+              classes: "govuk-input--width-2",
+              name: "month",
+              value: applicationDateMonth
+            },
+            {
+              classes: "govuk-input--width-4",
+              name: "year",
+              value: applicationDateYear
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

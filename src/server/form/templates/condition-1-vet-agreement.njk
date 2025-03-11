@@ -1,0 +1,111 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <strong>Condition 1:</strong> The licence holder must ensure that a veterinary surgeon who is a member of the Royal College of Veterinary Surgeons is present at the racetrack on each day on which races take place.
+      </p>
+
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "hasVetAgreement",
+          name: "hasVetAgreement",
+          fieldset: {
+            legend: {
+              text: "Do you have an agreement with a veterinary surgeon to attend on race days?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: hasVetAgreement === true
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: hasVetAgreement === false,
+              conditional: {
+                html: govukDateInput({
+                  id: "anticipatedAgreementDate",
+                  namePrefix: "anticipatedAgreementDate",
+                  fieldset: {
+                    legend: {
+                      text: "When do you anticipate having this agreement in place?",
+                      isPageHeading: false,
+                      classes: "govuk-fieldset__legend--s"
+                    }
+                  },
+                  hint: {
+                    text: "For example, 27 3 2023"
+                  },
+                  items: [
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "day",
+                      value: anticipatedAgreementDateDay
+                    },
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "month",
+                      value: anticipatedAgreementDateMonth
+                    },
+                    {
+                      classes: "govuk-input--width-4",
+                      name: "year",
+                      value: anticipatedAgreementDateYear
+                    }
+                  ]
+                })
+              }
+            }
+          ]
+        }) }}
+
+        {{ govukInput({
+          label: {
+            text: "Veterinary surgeon contact details",
+            classes: "govuk-label--m"
+          },
+          hint: {
+            text: "Include name, address, telephone number"
+          },
+          id: "vetContact",
+          name: "vetContact",
+          value: vetContact
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

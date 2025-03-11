@@ -1,0 +1,14 @@
+# Environment configuration
+NODE_ENV=development
+
+# Server configuration
+PORT=3000
+HOST=localhost
+
+# API configuration
+API_URL=http://localhost:3001
+API_TIMEOUT=30000
+
+# Session configuration
+SESSION_COOKIE_PASSWORD=this-is-a-very-long-and-secure-password-for-development-only
+SESSION_TTL=24 * 60 * 60 * 1000 # 24 hours in milliseconds

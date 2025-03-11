@@ -1,0 +1,103 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <strong>Condition 2:</strong> The licence holder must ensure that suitable facilities are provided for the attending veterinary surgeon, including:
+      </p>
+      
+      <ul class="govuk-list govuk-list--bullet">
+        <li>A room or area for the examination of greyhounds</li>
+        <li>Appropriate equipment for the examination and treatment of greyhounds</li>
+        <li>Facilities for the safe storage of veterinary medicines</li>
+      </ul>
+
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "facilitiesReady",
+          name: "facilitiesReady",
+          fieldset: {
+            legend: {
+              text: "Do you have suitable facilities for the attending veterinary surgeon?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: facilitiesReady === true
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: facilitiesReady === false,
+              conditional: {
+                html: govukDateInput({
+                  id: "anticipatedFacilitiesDate",
+                  namePrefix: "anticipatedFacilitiesDate",
+                  fieldset: {
+                    legend: {
+                      text: "When do you anticipate having these facilities in place?",
+                      isPageHeading: false,
+                      classes: "govuk-fieldset__legend--s"
+                    }
+                  },
+                  hint: {
+                    text: "For example, 27 3 2023"
+                  },
+                  items: [
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "day",
+                      value: anticipatedFacilitiesDateDay
+                    },
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "month",
+                      value: anticipatedFacilitiesDateMonth
+                    },
+                    {
+                      classes: "govuk-input--width-4",
+                      name: "year",
+                      value: anticipatedFacilitiesDateYear
+                    }
+                  ]
+                })
+              }
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 

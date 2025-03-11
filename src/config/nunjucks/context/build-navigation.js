@@ -2,16 +2,25 @@
  * @param {Partial<Request> | null} request
  */
 export function buildNavigation(request) {
+  const currentPath = request?.path ?? '/'
+
   return [
     {
       text: 'Home',
       url: '/',
-      isActive: request?.path === '/'
+      isActive: currentPath === '/'
     },
     {
-      text: 'About',
-      url: '/about',
-      isActive: request?.path === '/about'
+      text: 'Dashboard',
+      url: '/dashboard',
+      isActive:
+        currentPath === '/dashboard' ||
+        (currentPath.startsWith('/form/') && currentPath !== '/form/new')
+    },
+    {
+      text: 'New Application',
+      url: '/form/new',
+      isActive: currentPath === '/form/new'
     }
   ]
 }

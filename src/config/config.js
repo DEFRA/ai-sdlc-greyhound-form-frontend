@@ -68,6 +68,18 @@ export const config = convict({
     format: Boolean,
     default: isTest
   },
+  apiUrl: {
+    doc: 'API URL',
+    format: String,
+    default: 'http://localhost:3001',
+    env: 'API_URL'
+  },
+  apiTimeout: {
+    doc: 'API timeout in milliseconds',
+    format: Number,
+    default: 30000,
+    env: 'API_TIMEOUT'
+  },
   log: {
     enabled: {
       doc: 'Is logging enabled',

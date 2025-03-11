@@ -1,0 +1,97 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+
+{% block beforeContent %}
+  {{ govukBackLink({
+    text: "Back",
+    href: backLink
+  }) }}
+{% endblock %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Page " + currentPage + " of " + totalPages
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body">
+        <strong>Condition 3:</strong> The licence holder must ensure that suitable kennels are available for greyhounds that require isolation, treatment or rest before, during or after racing.
+      </p>
+
+      <form method="post" action="/form/{{ formId }}/page/{{ currentPage }}" novalidate>
+        {{ govukRadios({
+          idPrefix: "kennelsReady",
+          name: "kennelsReady",
+          fieldset: {
+            legend: {
+              text: "Do you have suitable kennels available for greyhounds?",
+              isPageHeading: false,
+              classes: "govuk-fieldset__legend--m"
+            }
+          },
+          items: [
+            {
+              value: "true",
+              text: "Yes",
+              checked: kennelsReady === true
+            },
+            {
+              value: "false",
+              text: "No",
+              checked: kennelsReady === false,
+              conditional: {
+                html: govukDateInput({
+                  id: "anticipatedKennelsDate",
+                  namePrefix: "anticipatedKennelsDate",
+                  fieldset: {
+                    legend: {
+                      text: "When do you anticipate having suitable kennels in place?",
+                      isPageHeading: false,
+                      classes: "govuk-fieldset__legend--s"
+                    }
+                  },
+                  hint: {
+                    text: "For example, 27 3 2023"
+                  },
+                  items: [
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "day",
+                      value: anticipatedKennelsDateDay
+                    },
+                    {
+                      classes: "govuk-input--width-2",
+                      name: "month",
+                      value: anticipatedKennelsDateMonth
+                    },
+                    {
+                      classes: "govuk-input--width-4",
+                      name: "year",
+                      value: anticipatedKennelsDateYear
+                    }
+                  ]
+                })
+              }
+            }
+          ]
+        }) }}
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            text: "Continue"
+          }) }}
+
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" name="saveForLater" value="true">
+            Save for later
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %} 
