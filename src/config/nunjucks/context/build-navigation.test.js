@@ -25,6 +25,11 @@ describe('#buildNavigation', () => {
         isActive: false,
         text: 'New Application',
         url: '/form/new'
+      },
+      {
+        isActive: false,
+        text: 'Contact',
+        url: '/contact'
       }
     ])
   })
@@ -45,6 +50,11 @@ describe('#buildNavigation', () => {
         isActive: false,
         text: 'New Application',
         url: '/form/new'
+      },
+      {
+        isActive: false,
+        text: 'Contact',
+        url: '/contact'
       }
     ])
   })
@@ -65,6 +75,11 @@ describe('#buildNavigation', () => {
         isActive: false,
         text: 'New Application',
         url: '/form/new'
+      },
+      {
+        isActive: false,
+        text: 'Contact',
+        url: '/contact'
       }
     ])
   })
@@ -85,6 +100,11 @@ describe('#buildNavigation', () => {
         isActive: false,
         text: 'New Application',
         url: '/form/new'
+      },
+      {
+        isActive: false,
+        text: 'Contact',
+        url: '/contact'
       }
     ])
   })
@@ -105,6 +125,11 @@ describe('#buildNavigation', () => {
         isActive: true,
         text: 'New Application',
         url: '/form/new'
+      },
+      {
+        isActive: false,
+        text: 'Contact',
+        url: '/contact'
       }
     ])
   })

@@ -91,7 +91,7 @@ export function formatDate(date) {
  * Combine date fields into an ISO date string
  * @param {object} payload - The form payload containing day, month, year fields
  * @param {string} prefix - The prefix for the date fields (e.g. 'applicationDate')
- * @returns {string} The ISO date string
+ * @returns {string|null} The ISO date string or null if invalid/missing date
  */
 export function combineDateFields(payload, prefix) {
   const day = payload[`${prefix}-day`]
@@ -102,7 +102,21 @@ export function combineDateFields(payload, prefix) {
     return null
   }
 
-  // Create a date object and return ISO string
+  // Create a date object and validate the date is valid
   const date = new Date(year, month - 1, day)
+  if (isNaN(date.getTime())) {
+    return null
+  }
+
+  // Return null if any component is invalid
+  if (
+    date.getDate() !== parseInt(day, 10) ||
+    date.getMonth() + 1 !== parseInt(month, 10) ||
+    date.getFullYear() !== parseInt(year, 10)
+  ) {
+    return null
+  }
+
+  // Return the date in YYYY-MM-DD format
   return date.toISOString().split('T')[0]
 }

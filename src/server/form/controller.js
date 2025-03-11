@@ -1,4 +1,4 @@
-import { getFormPages, getValueByPath, combineDateFields } from './helpers.js'
+import { getFormPages, combineDateFields } from './helpers.js'
 import { formService } from './index.js'
 
 /**
@@ -95,6 +95,21 @@ export const newFormController = {
 }
 
 /**
+ * Split an ISO date string into day, month, year components
+ * @param {string} isoDate - The ISO date string to split
+ * @returns {object} Object containing day, month, year values
+ */
+function splitDateString(isoDate) {
+  if (!isoDate) return { day: '', month: '', year: '' }
+  const date = new Date(isoDate)
+  return {
+    day: date.getDate().toString().padStart(2, '0'),
+    month: (date.getMonth() + 1).toString().padStart(2, '0'),
+    year: date.getFullYear().toString()
+  }
+}
+
+/**
  * Form page controller to display and process form pages
  * @satisfies {Partial<ServerRoute>}
  */
@@ -123,14 +138,69 @@ export const formPageController = {
 
         // Check if the user clicked "Save for later"
         if (payload.saveForLater) {
+          // Process date fields if they exist
+          const processedPayload = { ...payload }
+          delete processedPayload.saveForLater
+
+          // Handle application date on page 2
+          if (page.id === 'disqualification') {
+            const applicationDate = combineDateFields(
+              payload,
+              'applicationDate'
+            )
+            if (applicationDate) {
+              processedPayload.applicationDate = new Date(
+                applicationDate
+              ).toISOString()
+            }
+            // Remove the individual date fields
+            delete processedPayload['applicationDate-day']
+            delete processedPayload['applicationDate-month']
+            delete processedPayload['applicationDate-year']
+          }
+
+          // Handle condition dates only on their respective pages
+          if (page.section.startsWith('licensingConditions.')) {
+            const conditionDateFields = {
+              condition1: [
+                'anticipatedAgreementDate',
+                'anticipatedRegisterDate'
+              ],
+              condition2: ['anticipatedFacilitiesDate'],
+              condition3: ['anticipatedKennelsDate'],
+              condition4: ['anticipatedIdentificationDate'],
+              condition5: ['anticipatedRecordsDate'],
+              condition6: ['anticipatedInjuryRecordsDate']
+            }
+
+            const condition = page.section.split('.')[1]
+            const dateFields = conditionDateFields[condition] || []
+
+            for (const dateField of dateFields) {
+              const combinedDate = combineDateFields(payload, dateField)
+              if (combinedDate) {
+                processedPayload[dateField] = new Date(
+                  combinedDate
+                ).toISOString()
+              } else {
+                processedPayload[dateField] = null
+              }
+              // Remove the individual date fields
+              delete processedPayload[`${dateField}-day`]
+              delete processedPayload[`${dateField}-month`]
+              delete processedPayload[`${dateField}-year`]
+            }
+          }
+
           // Update the form with the current page data
           const updatedForm = {
             formName: form.formName,
-            page: page.section,
-            data: {
-              ...getValueByPath(form.pages, page.section),
-              ...payload
-            }
+            page: page.section.startsWith('licensingConditions.')
+              ? 'licensingConditions'
+              : page.section,
+            data: page.section.startsWith('licensingConditions.')
+              ? { [page.section.split('.')[1]]: processedPayload }
+              : processedPayload
           }
 
           await formService.updateForm(request, formId, updatedForm)
@@ -145,22 +215,53 @@ export const formPageController = {
         if (page.id === 'disqualification') {
           const applicationDate = combineDateFields(payload, 'applicationDate')
           if (applicationDate) {
-            processedPayload.applicationDate = applicationDate
+            processedPayload.applicationDate = new Date(
+              applicationDate
+            ).toISOString()
+          }
+          // Remove the individual date fields
+          delete processedPayload['applicationDate-day']
+          delete processedPayload['applicationDate-month']
+          delete processedPayload['applicationDate-year']
+        }
+
+        // Handle condition dates only on their respective pages
+        if (page.section.startsWith('licensingConditions.')) {
+          const conditionDateFields = {
+            condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
+            condition2: ['anticipatedFacilitiesDate'],
+            condition3: ['anticipatedKennelsDate'],
+            condition4: ['anticipatedIdentificationDate'],
+            condition5: ['anticipatedRecordsDate'],
+            condition6: ['anticipatedInjuryRecordsDate']
+          }
+
+          const condition = page.section.split('.')[1]
+          const dateFields = conditionDateFields[condition] || []
+
+          for (const dateField of dateFields) {
+            const combinedDate = combineDateFields(payload, dateField)
+            if (combinedDate) {
+              processedPayload[dateField] = new Date(combinedDate).toISOString()
+            } else {
+              processedPayload[dateField] = null
+            }
             // Remove the individual date fields
-            delete processedPayload['applicationDate-day']
-            delete processedPayload['applicationDate-month']
-            delete processedPayload['applicationDate-year']
+            delete processedPayload[`${dateField}-day`]
+            delete processedPayload[`${dateField}-month`]
+            delete processedPayload[`${dateField}-year`]
           }
         }
 
         // Update the form with the current page data
         const updatedForm = {
           formName: form.formName,
-          page: page.section,
-          data: {
-            ...getValueByPath(form.pages, page.section),
-            ...processedPayload
-          }
+          page: page.section.startsWith('licensingConditions.')
+            ? 'licensingConditions'
+            : page.section,
+          data: page.section.startsWith('licensingConditions.')
+            ? { [page.section.split('.')[1]]: processedPayload }
+            : processedPayload
         }
 
         await formService.updateForm(request, formId, updatedForm)
@@ -174,7 +275,37 @@ export const formPageController = {
       }
 
       // Get the section data for the current page
-      const sectionData = getValueByPath(form.pages, page.section) || {}
+      const sectionData = form.pages?.[page.section] || {}
+
+      // Split date fields for display if needed
+      if (page.id === 'disqualification' && sectionData.applicationDate) {
+        const { day, month, year } = splitDateString(
+          sectionData.applicationDate
+        )
+        sectionData.applicationDateDay = day
+        sectionData.applicationDateMonth = month
+        sectionData.applicationDateYear = year
+      }
+
+      // Split condition date fields for display
+      const dateFields = [
+        'anticipatedAgreementDate',
+        'anticipatedRegisterDate',
+        'anticipatedFacilitiesDate',
+        'anticipatedKennelsDate',
+        'anticipatedIdentificationDate',
+        'anticipatedRecordsDate',
+        'anticipatedInjuryRecordsDate'
+      ]
+
+      for (const dateField of dateFields) {
+        if (sectionData[dateField]) {
+          const { day, month, year } = splitDateString(sectionData[dateField])
+          sectionData[`${dateField}Day`] = day
+          sectionData[`${dateField}Month`] = month
+          sectionData[`${dateField}Year`] = year
+        }
+      }
 
       return h.view(`form/templates/${page.template}`, {
         pageTitle: page.title,
@@ -315,11 +446,67 @@ export const saveFormController = {
         return h.redirect('/dashboard')
       }
 
+      // Process date fields if they exist
+      const processedPayload = { ...request.payload }
+
+      // Get current page info
+      const pages = getFormPages()
+      const currentPage = pages.find((p) => p.section === form.page) || pages[0]
+
+      // Handle application date on page 2
+      if (currentPage.id === 'disqualification') {
+        const applicationDate = combineDateFields(
+          request.payload,
+          'applicationDate'
+        )
+        if (applicationDate) {
+          processedPayload.applicationDate = new Date(
+            applicationDate
+          ).toISOString()
+        }
+        // Remove the individual date fields
+        delete processedPayload['applicationDate-day']
+        delete processedPayload['applicationDate-month']
+        delete processedPayload['applicationDate-year']
+      }
+
+      // Handle condition dates only on their respective pages
+      if (currentPage.section.startsWith('licensingConditions.')) {
+        const conditionDateFields = {
+          condition1: ['anticipatedAgreementDate', 'anticipatedRegisterDate'],
+          condition2: ['anticipatedFacilitiesDate'],
+          condition3: ['anticipatedKennelsDate'],
+          condition4: ['anticipatedIdentificationDate'],
+          condition5: ['anticipatedRecordsDate'],
+          condition6: ['anticipatedInjuryRecordsDate']
+        }
+
+        const condition = currentPage.section.split('.')[1]
+        const dateFields = conditionDateFields[condition] || []
+
+        for (const dateField of dateFields) {
+          const combinedDate = combineDateFields(request.payload, dateField)
+          if (combinedDate) {
+            processedPayload[dateField] = new Date(combinedDate).toISOString()
+          } else {
+            processedPayload[dateField] = null
+          }
+          // Remove the individual date fields
+          delete processedPayload[`${dateField}-day`]
+          delete processedPayload[`${dateField}-month`]
+          delete processedPayload[`${dateField}-year`]
+        }
+      }
+
       // Update the form with the current page data
       await formService.updateForm(request, formId, {
         formName: form.formName,
-        page: 'applicantDetails', // Default to applicantDetails since this is a general save
-        data: request.payload
+        page: currentPage.section.startsWith('licensingConditions.')
+          ? 'licensingConditions'
+          : currentPage.section,
+        data: currentPage.section.startsWith('licensingConditions.')
+          ? { [currentPage.section.split('.')[1]]: processedPayload }
+          : processedPayload
       })
 
       return h.redirect('/dashboard')
