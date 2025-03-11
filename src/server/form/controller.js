@@ -1,5 +1,5 @@
 import { getFormPages, getValueByPath } from './helpers.js'
-import formService from './services/form.js'
+import { formService } from './index.js'
 
 /**
  * Dashboard controller to display saved forms
@@ -49,12 +49,14 @@ export const newFormController = {
         }
 
         // Create a new form in the API
-        const newForm = await formService.createForm(request, {
+        const formData = {
           formName: payload.formName.trim()
-        })
+        }
 
-        if (!newForm) {
-          request.logger.error('Failed to create form - API returned null')
+        const newForm = await formService.createForm(request, formData)
+
+        if (!newForm?.id) {
+          request.logger.error('Failed to create form - missing form ID')
           return h.view('form/templates/new-form', {
             pageTitle: 'Start a new application',
             heading: 'Start a new application',
@@ -64,16 +66,24 @@ export const newFormController = {
           })
         }
 
+        // Redirect to the first page of the form
         return h.redirect(`/form/${newForm.id}/page/1`)
       } catch (error) {
         request.logger.error('Error creating form:', error)
-        return h.view('form/templates/new-form', {
-          pageTitle: 'Start a new application',
-          heading: 'Start a new application',
-          formName: request.payload?.formName,
-          error:
-            'There was a problem creating your application. Please try again.'
-        })
+
+        // Handle specific API errors
+        const errorMessage =
+          error.message ||
+          'There was a problem creating your application. Please try again.'
+
+        return h
+          .view('form/templates/new-form', {
+            pageTitle: 'Start a new application',
+            heading: 'Start a new application',
+            formName: request.payload?.formName,
+            error: errorMessage
+          })
+          .code(error.status || 500)
       }
     }
 

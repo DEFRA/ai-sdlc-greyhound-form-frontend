@@ -38,20 +38,20 @@
           <tbody class="govuk-table__body">
             {% for form in savedForms %}
               <tr class="govuk-table__row">
-                <td class="govuk-table__cell">{{ form.name }}</td>
+                <td class="govuk-table__cell">{{ form.formName or 'Untitled Application' }}</td>
                 <td class="govuk-table__cell">
-                  {% if form.status === 'in-progress' %}
-                    <strong class="govuk-tag govuk-tag--blue">In progress</strong>
-                  {% else %}
+                  {% if form.status === 'submitted' %}
                     <strong class="govuk-tag govuk-tag--green">Submitted</strong>
+                  {% else %}
+                    <strong class="govuk-tag govuk-tag--blue">In progress</strong>
                   {% endif %}
                 </td>
-                <td class="govuk-table__cell">{{ form.updatedAt | date("DD MMMM YYYY") }}</td>
+                <td class="govuk-table__cell">{{ form.updatedAt | date("DD MMMM YYYY") or 'Not available' }}</td>
                 <td class="govuk-table__cell">
-                  {% if form.status === 'in-progress' %}
-                    <a href="/form/{{ form.id }}/page/1" class="govuk-link">Continue</a>
-                  {% else %}
+                  {% if form.status === 'submitted' %}
                     <a href="/form/{{ form.id }}/review" class="govuk-link">View</a>
+                  {% else %}
+                    <a href="/form/{{ form.id }}/page/1" class="govuk-link">Continue</a>
                   {% endif %}
                 </td>
               </tr>

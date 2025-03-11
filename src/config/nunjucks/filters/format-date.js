@@ -1,11 +1,23 @@
 import { format, isDate, parseISO } from 'date-fns'
 
 /**
- * @param {string | Date} value
- * @param {string} formattedDateStr
+ * Format a date string or Date object using date-fns
+ * @param {string | Date | undefined} value - The date to format
+ * @param {string} formatStr - The date-fns format string
+ * @returns {string} The formatted date string or empty string if invalid
  */
-export function formatDate(value, formattedDateStr = 'EEE do MMMM yyyy') {
-  const date = isDate(value) ? value : parseISO(value)
+export function formatDate(value, formatStr = 'EEE do MMMM yyyy') {
+  if (!value) {
+    return ''
+  }
 
-  return format(date, formattedDateStr)
+  try {
+    // Convert format string from template to date-fns format
+    const dateFormat = formatStr.replace('DD', 'dd').replace('YYYY', 'yyyy')
+
+    const date = isDate(value) ? value : parseISO(value)
+    return format(date, dateFormat)
+  } catch {
+    return ''
+  }
 }

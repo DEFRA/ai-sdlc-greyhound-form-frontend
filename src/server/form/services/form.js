@@ -11,7 +11,8 @@ class FormService {
    */
   async getForms(request) {
     try {
-      return await apiService.get('/api/forms')
+      const response = await apiService.get('/api/forms')
+      return response?.forms || []
     } catch (error) {
       request.logger.error('Error fetching forms:', error)
       return []
@@ -31,7 +32,8 @@ class FormService {
     }
 
     try {
-      return await apiService.get(`/api/forms/${formId}`)
+      const response = await apiService.get(`/api/forms/${formId}`)
+      return response?.form || null
     } catch (error) {
       request.logger.error(`Error fetching form ${formId}:`, error)
       return null
@@ -51,10 +53,19 @@ class FormService {
     }
 
     try {
-      return await apiService.post('/api/forms', formData)
+      const response = await apiService.post('/api/forms', formData)
+      // The API returns { message, form } where form contains the form data
+      if (!response?.form?.id) {
+        request.logger.error(
+          'API response missing form data or form ID:',
+          response
+        )
+        return null
+      }
+      return response.form
     } catch (error) {
       request.logger.error('Error creating form:', error)
-      return null
+      throw error // Re-throw the error to be handled by the controller
     }
   }
 
@@ -72,7 +83,8 @@ class FormService {
     }
 
     try {
-      return await apiService.put(`/api/forms/${formId}`, formData)
+      const response = await apiService.put(`/api/forms/${formId}`, formData)
+      return response?.form || null
     } catch (error) {
       request.logger.error(`Error updating form ${formId}:`, error)
       throw error
@@ -92,7 +104,8 @@ class FormService {
     }
 
     try {
-      return await apiService.post(`/api/forms/${formId}/submit`, {})
+      const response = await apiService.post(`/api/forms/${formId}/submit`, {})
+      return response?.form || null
     } catch (error) {
       request.logger.error(`Error submitting form ${formId}:`, error)
       return null
@@ -100,4 +113,4 @@ class FormService {
   }
 }
 
-export default new FormService()
+export default FormService

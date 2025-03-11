@@ -8,7 +8,7 @@ import {
 } from './controller.js'
 import FormService from './services/form.js'
 
-const formService = new FormService()
+export const formService = new FormService()
 
 /**
  * Sets up the routes used in the form pages.
